@@ -30,13 +30,54 @@ class ToDoTask {
         self.deadline = deadline
         self.calendarEventID = calendarEventID
     }
-    
-    convenience init() {
-        self.init(id: UUID().uuidString, name: "", state: .todo, subtasks: [], deadline: nil, calendarEventID: nil)
-    }
 }
 
 struct Subtask: Codable {
     let name: String
     let done: Bool
+}
+
+struct ToDoTaskRepresentation: ModelRepresentation {
+    
+    let id: String?
+    var name: String
+    var state: ToDoTask.State
+    var subtasks: [Subtask]
+    var deadline: Date?
+    var calendarEventID: String?
+    
+    var representedType: ToDoTask {
+        .init(
+            id: id ?? UUID().uuidString,
+            name: name,
+            state: state,
+            subtasks: subtasks,
+            deadline: deadline,
+            calendarEventID: calendarEventID
+        )
+    }
+    
+    init(representedType task: ToDoTask) {
+        id = task.id
+        name = task.name
+        state = task.state
+        subtasks = task.subtasks
+        deadline = task.deadline
+        calendarEventID = task.calendarEventID
+    }
+    
+    init(
+        name: String = "",
+        state: ToDoTask.State = .todo,
+        subtasks: [Subtask] = [],
+        deadline: Date? = nil,
+        calendarEventID: String? = nil
+    ) {
+        self.id = nil
+        self.name = name
+        self.state = state
+        self.subtasks = subtasks
+        self.deadline = deadline
+        self.calendarEventID  = calendarEventID
+    }
 }
