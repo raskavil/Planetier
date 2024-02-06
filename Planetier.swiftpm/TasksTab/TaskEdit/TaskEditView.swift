@@ -53,6 +53,7 @@ struct TaskEditView<Superview: View>: View {
 
     @Binding var representedTask: ToDoTaskRepresentation?
     @State var step: Step = .name
+    @State var displayingNameError = false
     
     private let superview: Superview
     private let submit: () -> Void
@@ -110,7 +111,6 @@ struct TaskEditView<Superview: View>: View {
                 }
                 .padding(.default)
                 .presentationDetents([.medium])
-                .presentationDragIndicator(.visible)
             })
     }
     
@@ -118,34 +118,38 @@ struct TaskEditView<Superview: View>: View {
         if let representedTask {
             switch step {
                 case .name:
-                    VStack(alignment: .leading, spacing: .default) {
-                        Text("What's the task going to be called?")
-                            .font(.headline)
-                            .bold()
-                            .foregroundStyle(.black)
-                        TextField(
-                            "Name of the task",
-                            text: .init(
-                                get: { representedTask.name },
-                                set: { self.representedTask?.name = $0 }
-                            ),
-                            axis: .vertical
-                        )
-                        .font(.title2)
-                        .lineLimit(2)
+                    Text("What's the task going to be called?")
+                        .font(.headline)
                         .bold()
-                        .matchedGeometryEffect(
-                            id: TaskEditView<Superview>.nameViewId,
-                            in: namespace,
-                            anchor: .topLeading
-                        )
-                        .padding(.default)
-                        .background {
-                            RoundedRectangle(cornerRadius: .defaultRadius)
-                                .stroke(.gray, lineWidth: 1)
-                                .padding(.horizontal, 0.5)
-                                .foregroundStyle(.clear)
-                        }
+                        .foregroundStyle(.black)
+                    TextField(
+                        "Name of the task",
+                        text: .init(
+                            get: { representedTask.name },
+                            set: { self.representedTask?.name = $0 }
+                        ),
+                        axis: .vertical
+                    )
+                    .font(.headline)
+                    .bold()
+                    .matchedGeometryEffect(
+                        id: TaskEditView<Superview>.nameViewId,
+                        in: namespace,
+                        anchor: .topLeading
+                    )
+                    .padding(.default)
+                    .background {
+                        RoundedRectangle(cornerRadius: .defaultRadius)
+                            .stroke(.gray, lineWidth: 1)
+                            .padding(.horizontal, 0.5)
+                            .foregroundStyle(.clear)
+                    }
+                    if displayingNameError {
+                        Text("Name of a task should not be empty and should have a maximum of 20 characters")
+                            .font(.caption)
+                            .bold()
+                            .foregroundStyle(.tint)
+                            .padding(.top, -.medium)
                     }
                 default:
                     Text(representedTask.name)
@@ -319,7 +323,12 @@ struct TaskEditView<Superview: View>: View {
     private var nextButton: some View {
         Button {
             if let nextStep {
-                withAnimation(.easeInOut(duration: 0.3)) { 
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    guard step != .name || representedTask?.name.isEmpty != true else {
+                        displayingNameError = true
+                        return
+                    }
+                    displayingNameError = false
                     if let subtasks = representedTask?.subtasks {
                         representedTask?.subtasks = subtasks.filter { $0.name.isEmpty == false }
                     }
