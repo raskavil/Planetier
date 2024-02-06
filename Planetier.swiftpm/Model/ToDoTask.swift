@@ -32,9 +32,19 @@ class ToDoTask {
     }
 }
 
-struct Subtask: Codable, Equatable {
+struct Subtask: Codable, Equatable, Identifiable {
+    var id: String
     var name: String
     var done: Bool
+    
+    init(
+        name: String = "",
+        done: Bool = false
+    ) {
+        self.id = UUID().uuidString
+        self.name = name
+        self.done = done
+    }
 }
 
 struct ToDoTaskRepresentation: ModelRepresentation, Identifiable, Equatable {

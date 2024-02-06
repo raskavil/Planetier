@@ -23,19 +23,30 @@ extension View {
 }
 
 struct TaskEditView<Superview: View>: View {
+    
+    static var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter
+    }
+    
+    static var subtaskIDPrefix: String {
+        "TaskEditViewSubtaskView"
+    }
+    
+    static var deadlineViewId: String {
+        "TaskEditViewDeadlineView"
+    }
+    
+    static var nameViewId: String {
+        "TaskEditViewNameView"
+    }
 
     enum Step: CaseIterable {
         case name
         case deadline
         case subtasks
         case overview
-        
-        var presentationDetent: PresentationDetent {
-            switch self {
-                case .name, .deadline:      return .fraction(0.5)
-                case .subtasks, .overview:  return .medium
-            }
-        }
     }
     
     @Namespace var namespace
@@ -70,14 +81,31 @@ struct TaskEditView<Superview: View>: View {
                 }
             }
             .sheet(item: $representedTask, content: { task in
-                VStack(alignment: .leading, spacing: .default) {
+                VStack(alignment: .leading, spacing: .zero) {
                     backButton
                     ScrollView {
-                        content
+                        Rectangle()
+                            .foregroundStyle(.clear)
+                            .frame(height: .default)
+                        VStack(alignment: .leading, spacing: .default) {
+                            name
+                            deadline
+                            subtasks
+                        }
+                        Rectangle()
+                            .foregroundStyle(.clear)
+                            .frame(height: .default)
                     }
                     .scrollIndicators(.hidden)
                     .scrollBounceBehavior(.basedOnSize)
-                    Spacer()
+                    .overlay(alignment: .top) {
+                        LinearGradient(colors: [.white, .clear], startPoint: .top, endPoint: .bottom)
+                            .frame(height: .default)
+                    }
+                    .overlay(alignment: .bottom) {
+                        LinearGradient(colors: [.white, .clear], startPoint: .bottom, endPoint: .top)
+                            .frame(height: .default)
+                    }
                     nextButton
                 }
                 .padding(.default)
@@ -86,19 +114,187 @@ struct TaskEditView<Superview: View>: View {
             })
     }
     
-    @ViewBuilder private var content: some View {
-        switch step {
-            case .name:
-                NameView(representedTask: $representedTask, namespace: namespace)
-            case .deadline:
-                DeadlineView(representedTask: $representedTask, namespace: namespace)
-            case .subtasks:
-                SubtasksView(representedTask: $representedTask, namespace: namespace)
-            case .overview:
-                VStack {
-                    Text("Overview")
+    @ViewBuilder private var name: some View {
+        if let representedTask {
+            switch step {
+                case .name:
+                    VStack(alignment: .leading, spacing: .default) {
+                        Text("What's the task going to be called?")
+                            .font(.headline)
+                            .bold()
+                            .foregroundStyle(.black)
+                        TextField(
+                            "Name of the task",
+                            text: .init(
+                                get: { representedTask.name },
+                                set: { self.representedTask?.name = $0 }
+                            ),
+                            axis: .vertical
+                        )
+                        .font(.title2)
+                        .lineLimit(2)
+                        .bold()
+                        .matchedGeometryEffect(
+                            id: TaskEditView<Superview>.nameViewId,
+                            in: namespace,
+                            anchor: .topLeading
+                        )
+                        .padding(.default)
+                        .background {
+                            RoundedRectangle(cornerRadius: .defaultRadius)
+                                .stroke(.gray, lineWidth: 1)
+                                .padding(.horizontal, 0.5)
+                                .foregroundStyle(.clear)
+                        }
+                    }
+                default:
+                    Text(representedTask.name)
+                        .lineLimit(2)
+                        .foregroundStyle(.black)
+                        .font(.title)
+                        .bold()
+                        .matchedGeometryEffect(
+                            id: TaskEditView<Superview>.nameViewId,
+                            in: namespace,
+                            anchor: .topLeading
+                        )
+            }
+        }
+    }
+    
+    @ViewBuilder private var deadline: some View {
+        if let representedTask {
+            switch step {
+                case .name:
+                    EmptyView()
+                case .deadline:
+                    HStack {
+                        Text("Does the task have a deadline?")
+                            .font(.headline)
+                            .bold()
+                        Spacer()
+                        Checkbox(isSelected: .init(
+                            get: { representedTask.deadline != nil },
+                            set: { self.representedTask?.deadline = $0 ? .now : nil }
+                        ))
+                    }
+                    if let deadline = representedTask.deadline {
+                        DatePicker(
+                            "Deadline",
+                            selection: .init(
+                                get: { deadline },
+                                set: { self.representedTask?.deadline = $0 }
+                            ),
+                            in: PartialRangeFrom(.now),
+                            displayedComponents: [.date]
+                        )
+                        .bold()
+                        .transition(.opacity)
+                        .matchedGeometryEffect(
+                            id: TaskEditView<Superview>.deadlineViewId,
+                            in: namespace
+                        )
+                    }
+                default:
+                    if let deadline = representedTask.deadline {
+                        HStack {
+                            Text("Deadline")
+                                .bold()
+                            Spacer()
+                            Text(Self.dateFormatter.string(from: deadline))
+                                .bold()
+                        }
+                        .transition(.opacity)
+                        .matchedGeometryEffect(
+                            id: TaskEditView<Superview>.deadlineViewId,
+                            in: namespace
+                        )
+                    }
+            }
+        }
+    }
+    
+    @ViewBuilder private var subtasks: some View {
+        if let representedTask, step == .subtasks || step == .overview {
+            VStack(alignment: .leading, spacing: -2) {
+                ForEach(representedTask.subtasks) { subtask in
+                    HStack(spacing: 0) {
+                        Checkbox(
+                            isSelected: .init(
+                                get: { subtask.done },
+                                set: { newValue in
+                                    self.representedTask?.subtasks.firstIndex(of: subtask)
+                                        .map { self.representedTask?.subtasks[$0].done = newValue }
+                                }
+                            )
+                        )
+                        .padding(.horizontal, .medium)
+                        if step == .subtasks {
+                            TextField(
+                                "",
+                                text: .init(
+                                    get: { subtask.name },
+                                    set: { newName in
+                                        self.representedTask?.subtasks.firstIndex(of: subtask)
+                                            .map { self.representedTask?.subtasks[$0].name = newName }
+                                    }
+                                )
+                            )
+                            .padding(.vertical, .medium)
+                        } else {
+                            Text(subtask.name)
+                                .padding(.vertical, .medium)
+                            Spacer()
+                        }
+                        Button("", systemImage: "trash.fill") {
+                            withAnimation(.easeIn(duration: 0.2)) {
+                                self.representedTask?.subtasks.firstIndex(of: subtask)
+                                    .map { self.representedTask?.subtasks.remove(atOffsets: [$0]) }
+                            }
+                        }
+                        .opacity(step == .subtasks ? 1 : 0)
+                        .disabled(step == .overview)
+                        .padding(.horizontal, .medium)
+                    }
+                    .bold()
+                    .background {
+                        RoundedRectangle(cornerRadius: .defaultRadius)
+                            .stroke(.black, lineWidth: 2.0)
+                            .padding(1.0)
+                            .foregroundStyle(.white)
+                    }
+                    .transition(.opacity)
+                    .matchedGeometryEffect(
+                        id: TaskEditView<Superview>.subtaskIDPrefix + subtask.id,
+                        in: namespace
+                    )
+                }
+                if step == .subtasks {
+                    Button(
+                        action: {
+                            withAnimation(.easeIn(duration: 0.2)) {
+                                self.representedTask?.subtasks.append(.init(name: "", done: false))
+                            }
+                        },
+                        label: {
+                            HStack(spacing: .medium) {
+                                Image(systemName: "plus")
+                                Text("Add new subtask")
+                                Spacer()
+                            }
+                            .bold()
+                        }
+                    )
+                    .padding(.medium)
+                    .background {
+                        RoundedRectangle(cornerRadius: .defaultRadius)
+                            .stroke(.black, lineWidth: 2.0)
+                            .padding(1.0)
+                            .foregroundStyle(.white)
+                    }
                 }
             }
+        }
     }
 
     private var backButton: some View {
@@ -114,7 +310,7 @@ struct TaskEditView<Superview: View>: View {
                     .foregroundStyle(.black)
                     .bold()
             }
-            .frame(width: 24, height: 24)
+            .frame(width: .large, height: .large)
             Spacer()
         }
         .animation(.none, value: representedTask?.id)
@@ -123,7 +319,12 @@ struct TaskEditView<Superview: View>: View {
     private var nextButton: some View {
         Button {
             if let nextStep {
-                withAnimation(.easeInOut(duration: 0.3)) { step = nextStep }
+                withAnimation(.easeInOut(duration: 0.3)) { 
+                    if let subtasks = representedTask?.subtasks {
+                        representedTask?.subtasks = subtasks.filter { $0.name.isEmpty == false }
+                    }
+                    step = nextStep
+                }
             } else {
                 submit()
             }
@@ -131,7 +332,7 @@ struct TaskEditView<Superview: View>: View {
             Text("Next")
                 .bold()
                 .foregroundStyle(.white)
-                .padding(16)
+                .padding(.default)
                 .frame(maxWidth: .infinity)
                 .background {
                     RoundedRectangle(cornerRadius: .defaultRadius)
