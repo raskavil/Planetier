@@ -3,18 +3,18 @@ import Foundation
 
 @Model
 class ToDoTask {
-    
-    enum State: String, Codable {
+
+    enum State: String, Codable, Equatable {
         case todo, progress, done
     }
-    
+
     let id: String
     var name: String
     var state: State
     var subtasks: [Subtask]
     var deadline: Date?
     var calendarEventID: String?
-    
+
     init(
         id: String,
         name: String,
@@ -32,20 +32,20 @@ class ToDoTask {
     }
 }
 
-struct Subtask: Codable {
-    let name: String
-    let done: Bool
+struct Subtask: Codable, Equatable {
+    var name: String
+    var done: Bool
 }
 
-struct ToDoTaskRepresentation: ModelRepresentation {
-    
+struct ToDoTaskRepresentation: ModelRepresentation, Identifiable, Equatable {
+
     let id: String?
     var name: String
     var state: ToDoTask.State
     var subtasks: [Subtask]
     var deadline: Date?
     var calendarEventID: String?
-    
+
     var representedType: ToDoTask {
         .init(
             id: id ?? UUID().uuidString,
@@ -56,7 +56,7 @@ struct ToDoTaskRepresentation: ModelRepresentation {
             calendarEventID: calendarEventID
         )
     }
-    
+
     init(representedType task: ToDoTask) {
         id = task.id
         name = task.name
@@ -65,7 +65,7 @@ struct ToDoTaskRepresentation: ModelRepresentation {
         deadline = task.deadline
         calendarEventID = task.calendarEventID
     }
-    
+
     init(
         name: String = "",
         state: ToDoTask.State = .todo,
