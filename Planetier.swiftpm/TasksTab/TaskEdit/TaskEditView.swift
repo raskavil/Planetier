@@ -78,35 +78,22 @@ struct TaskEditView<Superview: View>: View {
         superview
             .onChange(of: representedTask) { oldValue, newValue in
                 if oldValue == nil && newValue != nil {
+                    displayingNameError = false
                     step = .name
                 }
             }
             .sheet(item: $representedTask, content: { task in
                 VStack(alignment: .leading, spacing: .zero) {
                     backButton
-                    ScrollView {
-                        Rectangle()
-                            .foregroundStyle(.clear)
-                            .frame(height: .default)
+                    GradientScrollView(contentInsets: .init(vertical: .large)) {
                         VStack(alignment: .leading, spacing: .default) {
                             name
                             deadline
                             subtasks
                         }
-                        Rectangle()
-                            .foregroundStyle(.clear)
-                            .frame(height: .default)
                     }
                     .scrollIndicators(.hidden)
                     .scrollBounceBehavior(.basedOnSize)
-                    .overlay(alignment: .top) {
-                        LinearGradient(colors: [.white, .clear], startPoint: .top, endPoint: .bottom)
-                            .frame(height: .default)
-                    }
-                    .overlay(alignment: .bottom) {
-                        LinearGradient(colors: [.white, .clear], startPoint: .bottom, endPoint: .top)
-                            .frame(height: .default)
-                    }
                     nextButton
                 }
                 .padding(.default)
@@ -145,7 +132,7 @@ struct TaskEditView<Superview: View>: View {
                             .foregroundStyle(.clear)
                     }
                     if displayingNameError {
-                        Text("Name of a task should not be empty and should have a maximum of 20 characters")
+                        Text("Name of a task should not be empty.")
                             .font(.caption)
                             .bold()
                             .foregroundStyle(.tint)
@@ -222,7 +209,7 @@ struct TaskEditView<Superview: View>: View {
         if let representedTask, step == .subtasks || step == .overview {
             VStack(alignment: .leading, spacing: -2) {
                 ForEach(representedTask.subtasks) { subtask in
-                    HStack(spacing: 0) {
+                    HStack(alignment: .center, spacing: 0) {
                         Checkbox(
                             isSelected: .init(
                                 get: { subtask.done },
@@ -261,6 +248,7 @@ struct TaskEditView<Superview: View>: View {
                         .padding(.horizontal, .medium)
                     }
                     .bold()
+                    .frame(height: .large * 2)
                     .background {
                         RoundedRectangle(cornerRadius: .defaultRadius)
                             .stroke(.black, lineWidth: 2.0)
@@ -290,6 +278,7 @@ struct TaskEditView<Superview: View>: View {
                         }
                     )
                     .padding(.medium)
+                    .frame(height: .large * 2)
                     .background {
                         RoundedRectangle(cornerRadius: .defaultRadius)
                             .stroke(.black, lineWidth: 2.0)
@@ -317,36 +306,27 @@ struct TaskEditView<Superview: View>: View {
             .frame(width: .large, height: .large)
             Spacer()
         }
-        .animation(.none, value: representedTask?.id)
+        .animation(.none, value: step)
     }
     
     private var nextButton: some View {
-        Button {
-            if let nextStep {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    guard step != .name || representedTask?.name.isEmpty != true else {
-                        displayingNameError = true
-                        return
-                    }
-                    displayingNameError = false
-                    if let subtasks = representedTask?.subtasks {
-                        representedTask?.subtasks = subtasks.filter { $0.name.isEmpty == false }
-                    }
-                    step = nextStep
-                }
-            } else {
+        LargeButton(title: "Next") {
+            guard let nextStep else { 
                 submit()
+                return
             }
-        } label: {
-            Text("Next")
-                .bold()
-                .foregroundStyle(.white)
-                .padding(.default)
-                .frame(maxWidth: .infinity)
-                .background {
-                    RoundedRectangle(cornerRadius: .defaultRadius)
-                        .foregroundStyle(.blue)
+            
+            withAnimation(.easeInOut(duration: 0.3)) {
+                guard step != .name || representedTask?.name.isEmpty != true else {
+                    displayingNameError = true
+                    return
                 }
+                displayingNameError = false
+                if let subtasks = representedTask?.subtasks {
+                    representedTask?.subtasks = subtasks.filter { $0.name.isEmpty == false }
+                }
+                step = nextStep
+            }
         }
     }
 
