@@ -66,6 +66,14 @@ struct ToDoTaskRepresentation: ModelRepresentation, Identifiable, Equatable {
             calendarEventID: calendarEventID
         )
     }
+    
+    func setValues(on representedType: ToDoTask) {
+        representedType.name = name
+        representedType.state = state
+        representedType.subtasks = subtasks
+        representedType.deadline = deadline
+        representedType.calendarEventID = calendarEventID
+    }
 
     init(representedType task: ToDoTask) {
         id = task.id

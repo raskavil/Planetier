@@ -5,4 +5,6 @@ protocol ModelRepresentation {
     
     var representedType: RepresentedType { get }
     init(representedType: RepresentedType)
+    
+    func setValues(on representedType: RepresentedType)
 }

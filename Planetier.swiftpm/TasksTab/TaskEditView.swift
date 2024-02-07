@@ -1,15 +1,14 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - View modifier
 struct TaskEditable: ViewModifier {
     
-    let representedTask: Binding<ToDoTaskRepresentation?>
-    let submit: () -> Void
+    let input: Binding<TaskEditView.Input?>
     
     @ViewBuilder func body(content: Content) -> some View {
         TaskEditView(
-            representedTask: representedTask,
-            submit: submit,
+            input: input,
             superview: { content }
         )
     }
@@ -17,12 +16,35 @@ struct TaskEditable: ViewModifier {
 
 extension View {
     
-    func taskEditView(item: Binding<ToDoTaskRepresentation?>, submit: @escaping () -> Void) -> some View {
-        modifier(TaskEditable(representedTask: item, submit: submit))
+    func taskEditView(input: Binding<TaskEditView.Input?>) -> some View {
+        modifier(TaskEditable(input: input))
     }
 }
 
+// MARK: - Input enum
+enum TaskEditViewInput: Equatable, Identifiable {
+    case new
+    case edit(ToDoTask)
+    
+    var taskRepresentation: ToDoTaskRepresentation {
+        switch self {
+            case .edit(let task):   return .init(representedType: task)
+            case .new:              return .init()
+        }
+    }
+    
+    var id: String {
+        switch self {
+            case .edit(let task):   return task.id
+            case .new:              return "New task"
+        }
+    }
+}
+
+// MARK: - View definition
 struct TaskEditView<Superview: View>: View {
+    
+    typealias Input = TaskEditViewInput
     
     static var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -30,17 +52,9 @@ struct TaskEditView<Superview: View>: View {
         return formatter
     }
     
-    static var subtaskIDPrefix: String {
-        "TaskEditViewSubtaskView"
-    }
-    
-    static var deadlineViewId: String {
-        "TaskEditViewDeadlineView"
-    }
-    
-    static var nameViewId: String {
-        "TaskEditViewNameView"
-    }
+    static var subtaskIDPrefix: String { "TaskEditViewSubtaskView" }
+    static var deadlineViewId: String { "TaskEditViewDeadlineView" }
+    static var nameViewId: String { "TaskEditViewNameView" }
 
     enum Step: CaseIterable {
         case name
@@ -49,14 +63,15 @@ struct TaskEditView<Superview: View>: View {
         case overview
     }
     
-    @Namespace var namespace
-
-    @Binding var representedTask: ToDoTaskRepresentation?
-    @State var step: Step = .name
-    @State var displayingNameError = false
+    @Namespace private var namespace
+    @Environment(\.modelContext) private var modelContext
     
+    @Binding private var input: Input?
     private let superview: Superview
-    private let submit: () -> Void
+
+    @State private var representedTask: ToDoTaskRepresentation?
+    @State private var step: Step = .name
+    @State private var displayingNameError = false
     
     var nextStep: Step? {
         if let currentIndex = Step.allCases.firstIndex(of: step), Step.allCases.indices.contains(currentIndex + 1) {
@@ -76,13 +91,12 @@ struct TaskEditView<Superview: View>: View {
     
     var body: some View {
         superview
-            .onChange(of: representedTask) { oldValue, newValue in
-                if oldValue == nil && newValue != nil {
-                    displayingNameError = false
-                    step = .name
-                }
+            .onChange(of: input) { _, newValue in
+                representedTask = newValue?.taskRepresentation
+                displayingNameError = false
+                step = .name
             }
-            .sheet(item: $representedTask, content: { task in
+            .sheet(item: $input, content: { task in
                 VStack(alignment: .leading, spacing: .zero) {
                     backButton
                     GradientScrollView(contentInsets: .init(vertical: .large)) {
@@ -101,6 +115,7 @@ struct TaskEditView<Superview: View>: View {
             })
     }
     
+    // MARK: - Name segment
     @ViewBuilder private var name: some View {
         if let representedTask {
             switch step {
@@ -153,6 +168,7 @@ struct TaskEditView<Superview: View>: View {
         }
     }
     
+    // MARK: - Deadline segment
     @ViewBuilder private var deadline: some View {
         if let representedTask {
             switch step {
@@ -205,6 +221,7 @@ struct TaskEditView<Superview: View>: View {
         }
     }
     
+    // MARK: - Subtasks segment
     @ViewBuilder private var subtasks: some View {
         if let representedTask, step == .subtasks || step == .overview {
             VStack(alignment: .leading, spacing: -2) {
@@ -290,13 +307,14 @@ struct TaskEditView<Superview: View>: View {
         }
     }
 
+    // MARK: - Buttons
     private var backButton: some View {
         HStack {
             Button {
                 if let previousStep {
                     withAnimation(.easeInOut(duration: 0.3)) { step = previousStep }
                 } else {
-                    representedTask = nil
+                    input = nil
                 }
             } label: {
                 Image(systemName:  previousStep == nil ? "xmark" : "arrow.backward")
@@ -310,9 +328,9 @@ struct TaskEditView<Superview: View>: View {
     }
     
     private var nextButton: some View {
-        LargeButton(title: "Next") {
-            guard let nextStep else { 
-                submit()
+        LargeButton(title: step != .overview ? "Next" : "Save") {
+            guard let nextStep else {
+                finish()
                 return
             }
             
@@ -329,14 +347,23 @@ struct TaskEditView<Superview: View>: View {
             }
         }
     }
+    
+    // MARK: - Finish and init functions
+    private func finish() {
+        switch (representedTask, input) {
+            case (nil, _), (_, .none):
+                break
+            case (.some(let representation), .new):
+                modelContext.insert(representation.representedType)
+            case (.some(let representation), .edit(let task)):  
+                representation.setValues(on: task)
+        }
+        representedTask = nil
+        input = nil
+    }
 
-    init(
-        representedTask: Binding<ToDoTaskRepresentation?>,
-        submit: @escaping () -> Void,
-        @ViewBuilder superview: () -> Superview
-    ) {
-        self._representedTask = representedTask
-        self.submit = submit
+    init(input: Binding<Input?>, @ViewBuilder superview: () -> Superview) {
+        self._input = input
         self.superview = superview()
     }
     
@@ -380,11 +407,18 @@ struct TaskEditViewPreviews: PreviewProvider {
     
     static var previews: some View {
         TaskEditView(
-            representedTask: .constant(.init(name: "Task")),
-            submit: {}
+            input: .constant(.new)
         ) {
             Image(systemName: "list.bullet.clipboard")
         }
+        .modelContainer(.previewContainer)
     }
     
+}
+
+extension ModelContainer {
+    
+    static var previewContainer: ModelContainer {
+        try! ModelContainer(for: ToDoTask.self, configurations: .init(isStoredInMemoryOnly: true))
+    }
 }
