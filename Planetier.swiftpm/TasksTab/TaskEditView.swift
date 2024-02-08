@@ -36,7 +36,7 @@ enum TaskEditViewInput: Equatable, Identifiable {
     var id: String {
         switch self {
             case .edit(let task):   return task.id
-            case .new:              return "New task"
+            case .new:              return "new_task"
         }
     }
 }
@@ -58,7 +58,9 @@ struct TaskEditView<Superview: View>: View {
 
     enum Step: CaseIterable {
         case name
+        case priority
         case deadline
+        case estimation
         case subtasks
         case overview
     }
@@ -102,6 +104,7 @@ struct TaskEditView<Superview: View>: View {
                     GradientScrollView(contentInsets: .init(vertical: .large)) {
                         VStack(alignment: .leading, spacing: .default) {
                             name
+                            priority
                             deadline
                             subtasks
                         }
@@ -168,6 +171,40 @@ struct TaskEditView<Superview: View>: View {
         }
     }
     
+    // MARK: - Priority segment
+    @ViewBuilder private var priority: some View {
+        switch step {
+            case .name:
+                EmptyView()
+            default:
+                if let representedTask {
+                    HStack(spacing: .medium) {
+                        Text("Priority")
+                            .bold()
+                        if step == .priority {
+                            ForEach(ToDoTask.Priority.allCases, id: \.rawValue) { priority in
+                                Button(action: { self.representedTask?.priority = priority }) {
+                                    Badge(
+                                        text: priority.uiText,
+                                        image: priority.uiImage,
+                                        style: priority.badgeStyle(for: representedTask.priority)
+                                    )
+                                    .matchedGeometryEffect(id: "priority_" + priority.rawValue, in: namespace)
+                                }
+                            }
+                        } else {
+                            Badge(
+                                text: representedTask.priority.uiText,
+                                image: representedTask.priority.uiImage,
+                                style: representedTask.priority.badgeStyle(for: representedTask.priority)
+                            )
+                            .matchedGeometryEffect(id: "priority_" + representedTask.priority.rawValue, in: namespace)
+                        }
+                    }
+                }
+        }
+    }
+    
     // MARK: - Deadline segment
     @ViewBuilder private var deadline: some View {
         if let representedTask {
@@ -175,16 +212,19 @@ struct TaskEditView<Superview: View>: View {
                 case .name:
                     EmptyView()
                 case .deadline:
-                    HStack {
-                        Text("Does the task have a deadline?")
-                            .font(.headline)
-                            .bold()
-                        Spacer()
-                        Checkbox(isSelected: .init(
+                    Checkbox(
+                        isSelected: .init(
                             get: { representedTask.deadline != nil },
                             set: { self.representedTask?.deadline = $0 ? .now : nil }
-                        ))
-                    }
+                        ),
+                        label: {
+                            Text("Does the task have a deadline?")
+                                .font(.headline)
+                                .foregroundStyle(.black)
+                                .bold()
+                            Spacer()
+                        }
+                    )
                     if let deadline = representedTask.deadline {
                         DatePicker(
                             "Deadline",
@@ -369,6 +409,35 @@ struct TaskEditView<Superview: View>: View {
     
 }
 
+extension ToDoTask.Priority {
+    
+    var uiText: String {
+        switch self {
+            case .high:     "High"
+            case .medium:   "Medium"
+            case .low:      "Low"
+        }
+    }
+    
+    var uiImage: Image {
+        switch self {
+            case .high:     .init(systemName: "chevron.up.square.fill")
+            case .medium:   .init(systemName: "minus.square.fill")
+            case .low:      .init(systemName: "chevron.down.square.fill")
+        }
+    }
+    
+    func badgeStyle(for selection: Self) -> Badge.Style {
+        .init(
+            contentColor: self == selection ? .white : .accentColor,
+            backgroundColor: self == selection ? .accentColor : .white,
+            borderColor: self == selection ? .clear : .accentColor
+        )
+    }
+    
+}
+
+#warning("This might not be necessary")
 extension Binding {
     
     func safelyUnwrappedBinding<Parent, Child>(
@@ -401,19 +470,6 @@ extension Binding {
             optionalSelf.wrappedValue?[keyPath: keyPath] = newChildValue
         }
     }
-}
-
-struct TaskEditViewPreviews: PreviewProvider {
-    
-    static var previews: some View {
-        TaskEditView(
-            input: .constant(.new)
-        ) {
-            Image(systemName: "list.bullet.clipboard")
-        }
-        .modelContainer(.previewContainer)
-    }
-    
 }
 
 extension ModelContainer {

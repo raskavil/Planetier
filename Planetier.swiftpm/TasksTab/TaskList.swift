@@ -5,17 +5,11 @@ struct TaskList: View {
     
     @Environment(\.modelContext) var context
     @Query var tasks: [ToDoTask]
-    
     @State var editedTask: TaskEditViewInput?
     
     var body: some View {
         List(tasks) { task in
-            HStack {
-                Text(task.name)
-                Button("", systemImage: "square.and.pencil") {
-                    editedTask = .edit(task)
-                }
-            }
+            TaskCell(task: task, edit: { editedTask = .edit($0) })
         }
         .navigationTitle("Tasks")
         .navigationBarTitleDisplayMode(.large)
@@ -31,5 +25,7 @@ struct TaskList: View {
 }
 
 #Preview {
-    TaskList()
+    NavigationStack {
+        TaskList()
+    }
 }
