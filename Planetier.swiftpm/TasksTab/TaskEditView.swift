@@ -54,6 +54,7 @@ struct TaskEditView<Superview: View>: View {
     
     static var subtaskIDPrefix: String { "TaskEditViewSubtaskView" }
     static var deadlineViewId: String { "TaskEditViewDeadlineView" }
+    static var estimationViewId: String { "TaskEditViewEstimationView" }
     static var nameViewId: String { "TaskEditViewNameView" }
 
     enum Step: CaseIterable {
@@ -106,6 +107,7 @@ struct TaskEditView<Superview: View>: View {
                             name
                             priority
                             deadline
+                            estimation
                             subtasks
                         }
                     }
@@ -261,6 +263,67 @@ struct TaskEditView<Superview: View>: View {
         }
     }
     
+    // MARK: - Estimation segment
+    @ViewBuilder private var estimation: some View {
+        if let representedTask {
+            switch step {
+                case .name, .priority, .deadline:
+                    EmptyView()
+                case .estimation:
+                    Checkbox(
+                        isSelected: .init(
+                            get: { representedTask.estimation != nil },
+                            set: { self.representedTask?.estimation = $0 ? 0 : nil }
+                        ),
+                        label: {
+                            Text("Do you want to add an estimation?")
+                                .font(.headline)
+                                .foregroundStyle(.black)
+                                .bold()
+                            Spacer()
+                        }
+                    )
+                    if let estimation = representedTask.estimation {
+                        Picker(
+                            "Estimation",
+                            selection: .init(
+                                get: { Int(estimation / 60 / 60) },
+                                set: { self.representedTask?.estimation = Double($0) * 60 * 60 }
+                            ),
+                            content: {
+                                ForEach([1,2,3,4,5,6,12,18,24,36,48], id: \.self) {
+                                    Text($0.estimationText)
+                                        .bold()
+                                }
+                            }
+                        )
+                        .matchedGeometryEffect(
+                            id: TaskEditView<Superview>.estimationViewId,
+                            in: namespace
+                        )
+                        .pickerStyle(WheelPickerStyle())
+                        .transition(.opacity)
+                        .frame(height: .large * 3)
+                        .bold()
+                        .transition(.opacity)
+                    }
+                default:
+                    if let estimation = representedTask.estimation.map({ Int($0 / 60 / 60) }) {
+                        HStack(spacing: .small) {
+                            Text("Estimation ")
+                                .bold()
+                            Text(estimation.estimationText)
+                                .bold()
+                                .matchedGeometryEffect(
+                                    id: TaskEditView<Superview>.estimationViewId,
+                                    in: namespace
+                                )
+                        }
+                    }
+            }
+        }
+    }
+    
     // MARK: - Subtasks segment
     @ViewBuilder private var subtasks: some View {
         if let representedTask, step == .subtasks || step == .overview {
@@ -380,6 +443,11 @@ struct TaskEditView<Superview: View>: View {
                     return
                 }
                 displayingNameError = false
+                
+                if representedTask?.estimation == 0 {
+                    representedTask?.estimation = nil
+                }
+                
                 if let subtasks = representedTask?.subtasks {
                     representedTask?.subtasks = subtasks.filter { $0.name.isEmpty == false }
                 }
@@ -435,6 +503,13 @@ extension ToDoTask.Priority {
         )
     }
     
+}
+
+extension Int {
+
+    var estimationText: String {
+        "\(self) " + (self == 1 ? "hour" : "hours")
+    }
 }
 
 #warning("This might not be necessary")
