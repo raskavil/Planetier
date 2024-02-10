@@ -23,6 +23,7 @@ struct Badge: View {
             if let image {
                 image
                     .resizable()
+                    .aspectRatio(contentMode: .fit)
                     .bold()
                     .frame(width: .large, height: .large)
                     .foregroundStyle(style.contentColor)

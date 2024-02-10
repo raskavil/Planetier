@@ -291,7 +291,7 @@ struct TaskEditView<Superview: View>: View {
                                 set: { self.representedTask?.estimation = Double($0) * 60 * 60 }
                             ),
                             content: {
-                                ForEach([1,2,3,4,5,6,12,18,24,36,48], id: \.self) {
+                                ForEach([0,1,2,3,4,5,6,12,18,24,36,48], id: \.self) {
                                     Text($0.estimationText)
                                         .bold()
                                 }

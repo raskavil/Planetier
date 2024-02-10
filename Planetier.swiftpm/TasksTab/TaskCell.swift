@@ -16,17 +16,13 @@ struct TaskCell: View {
                 Spacer(minLength: 4)
                 Menu {
                     Menu("State") {
-                        Button("To do") {}
-                        Button("In progress") {}
-                        Button("Done") {}
+                        Button("Todo") { task.state = .todo }
+                        Button("In progress") { task.state = .progress }
+                        Button("Done") { task.state = .done }
                     }
                     Button("Bookmark", systemImage: "bookmark") {}
-                    Button("Edit", systemImage: "square.and.pencil") {
-                        edit(task)
-                    }
-                    Button("Delete", systemImage: "trash") {
-                        context.delete(task)
-                    }
+                    Button("Edit", systemImage: "square.and.pencil") { edit(task) }
+                    Button("Delete", systemImage: "trash") { context.delete(task) }
                 } label: {
                     Rectangle()
                         .foregroundStyle(.clear)
@@ -36,25 +32,50 @@ struct TaskCell: View {
                 }
                 .frame(width: .large, height: .large)
             }
-            HStack {
+            HStack(spacing: .small) {
                 if task.subtasks.isEmpty == false {
                     Button {
-                        isShowingSubtasks.toggle()
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isShowingSubtasks.toggle()
+                        }
                     } label: {
-                        Image(systemName: "chevron.up")
-                            .rotationEffect(isShowingSubtasks ? .radians(.pi) : .zero)
+                        Circle()
+                            .trim(from: 1 - Double(task.subtasks.filter(\.done).count) / Double(task.subtasks.count), to: 1)
+                            .stroke(.tint, lineWidth: .small)
+                            .frame(width: .large, height: .large)
+                            .rotationEffect(.init(radians: -.pi / 2))
+                            .rotation3DEffect(.radians(.pi), axis: (0,1,0))
+                            .overlay {
+                                Image(systemName: "chevron.up")
+                                    .imageScale(.small)
+                                    .bold()
+                                    .rotationEffect(isShowingSubtasks ? .radians(.pi) : .zero)
+                            }
+                            .padding(.trailing, 2)
                     }
                 }
+                task.priority.uiImage
+                    .resizable()
+                    .frame(width: .large, height: .large)
+                    .foregroundStyle(.tint)
                 Badge(
-                    text: task.priority.uiText,
-                    image: task.priority.uiImage,
-                    style: task.priority.badgeStyle(for: task.priority)
+                    text: task.state.uiText,
+                    style: .init(contentColor: .init(uiColor: .tintColor), borderColor: .init(uiColor: .tintColor))
                 )
-                if let deadline = task.deadline {
-                    Text(TaskEditView<EmptyView>.dateFormatter.string(from: deadline))
-                }
                 if let estimation = task.estimation.map({ Int($0 / 60 / 60) }) {
-                    Badge(text: estimation.estimationText)
+                    Badge(text: "\(estimation)h")
+                        .bold()
+                }
+                if let deadline = task.deadline {
+                    Badge(
+                        text: TaskEditView<EmptyView>.dateFormatter.string(from: deadline),
+                        image: .init(systemName: "calendar.badge.clock"),
+                        style: .init(
+                            contentColor: .white,
+                            backgroundColor: .init(uiColor: .tintColor),
+                            borderColor: .clear
+                        )
+                    )
                 }
                 Spacer()
             }
@@ -66,6 +87,7 @@ struct TaskCell: View {
                                 isSelected: .init(
                                     get: { subtask.done },
                                     set: { newValue in
+                                        guard isShowingSubtasks else { return } // Hiding views triggers Checkmark button action
                                         task.subtasks.firstIndex(of: subtask)
                                             .map { task.subtasks[$0].done = newValue }
                                     }
@@ -76,20 +98,31 @@ struct TaskCell: View {
                                 .padding(.vertical, .medium)
                             Spacer()
                         }
-                        .bold()
                         .frame(height: .large * 2)
                         .background {
                             RoundedRectangle(cornerRadius: .defaultRadius)
-                                .stroke(.black, lineWidth: 2.0)
-                                .padding(1.0)
+                                .stroke(.black, lineWidth: 1.0)
+                                .padding(0.5)
                                 .foregroundStyle(.white)
                         }
                     }
                 }
-                .transition(.opacity)
+                .padding(.top, .default)
             }
         }
     }
+}
+
+extension ToDoTask.State {
+    
+    var uiText: String {
+        return switch self {
+            case .done:     "Done"
+            case .progress: "In progress"
+            case .todo:     "Todo"
+        }
+    }
+    
 }
 
 #Preview {
