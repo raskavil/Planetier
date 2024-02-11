@@ -19,14 +19,54 @@ class ToDoTask {
     let id: String
     let creationDate: Date
     var name: String
-    var state: State
-    var priority: Priority
+    var stateRaw: State.RawValue
+    var priorityRaw: Priority.RawValue
     var subtasks: [Subtask]
     var estimation: TimeInterval?
     var deadline: Date?
     var calendarEventID: String?
 
+    @Transient var priority: Priority {
+        get {
+            .init(rawValue: priorityRaw) ?? .medium
+        }
+        set {
+            priorityRaw = newValue.rawValue
+        }
+    }
+    
+    @Transient var state: State {
+        get {
+            .init(rawValue: stateRaw) ?? .todo
+        }
+        set {
+            stateRaw = newValue.rawValue
+        }
+    }
+
     init(
+        id: String,
+        creationDate: Date,
+        name: String,
+        stateRaw: State.RawValue,
+        priorityRaw: Priority.RawValue,
+        subtasks: [Subtask],
+        estimation: TimeInterval?,
+        deadline: Date?,
+        calendarEventID: String?
+    ) {
+        self.id = id
+        self.creationDate = creationDate
+        self.name = name
+        self.stateRaw = stateRaw
+        self.priorityRaw = priorityRaw
+        self.subtasks = subtasks
+        self.estimation = estimation
+        self.deadline = deadline
+        self.calendarEventID = calendarEventID
+    }
+    
+    convenience init(
         id: String,
         creationDate: Date,
         name: String,
@@ -37,15 +77,17 @@ class ToDoTask {
         deadline: Date?,
         calendarEventID: String?
     ) {
-        self.id = id
-        self.creationDate = creationDate
-        self.name = name
-        self.state = state
-        self.priority = priority
-        self.subtasks = subtasks
-        self.estimation = estimation
-        self.deadline = deadline
-        self.calendarEventID = calendarEventID
+        self.init(
+            id: id,
+            creationDate: creationDate,
+            name: name,
+            stateRaw: state.rawValue,
+            priorityRaw: priority.rawValue,
+            subtasks: subtasks,
+            estimation: estimation,
+            deadline: deadline,
+            calendarEventID: calendarEventID
+        )
     }
 }
 

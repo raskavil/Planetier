@@ -13,6 +13,7 @@ struct TaskCell: View {
     
     let task: ToDoTask
     let edit: (ToDoTask) -> Void
+    let delete: (ToDoTask) -> Void
     @State var isShowingSubtasks = false
     
     var body: some View {
@@ -28,7 +29,7 @@ struct TaskCell: View {
                     }
                     Button("Bookmark", systemImage: "bookmark") {}
                     Button("Edit", systemImage: "square.and.pencil") { edit(task) }
-                    Button("Delete", systemImage: "trash") { context.delete(task) }
+                    Button("Delete", systemImage: "trash") { delete(task) }
                 } label: {
                     Rectangle()
                         .foregroundStyle(.clear)
@@ -147,6 +148,6 @@ extension ToDoTask.State {
         deadline: nil,
         calendarEventID: nil
     )
-    return TaskCell(task: task, edit: { _ in })
+    return TaskCell(task: task, edit: { _ in }, delete: { _ in })
         .modelContext(.init(container))
 }

@@ -1,3 +1,4 @@
+import Foundation
 
 struct TaskSortInput: Codable, Identifiable, Hashable {
     
@@ -26,35 +27,13 @@ struct TaskSortInput: Codable, Identifiable, Hashable {
 
 extension TaskSortInput.Predicate {
     
-    var predicate: (ToDoTask, ToDoTask) -> Bool {
-        switch self {
-            case .creation:     return { $0.creationDate > $1.creationDate }
-            case .deadline:     return { lhs, rhs in
-                guard let lhsDeadline = lhs.deadline else { return false }
-                guard let rhsDeadline = rhs.deadline else { return true }
-                return lhsDeadline > rhsDeadline
-            }
-            case .estimation:   return { lhs, rhs in
-                guard let lhsEstimation = lhs.estimation else { return false }
-                guard let rhsEstimation = rhs.estimation else { return true }
-                return lhsEstimation > rhsEstimation
-            }
-            case .priority:     return { $0.priority > $1.priority }
-            case .name:         return { $0.name > $1.name }
-        }
-    }
-}
-
-extension [ToDoTask] {
-    
-    func sorted(using input: TaskSortInput) -> Self {
-        sorted { lhs, rhs in
-            let predicates = input.array.map(\.predicate)
-            for predicate in predicates {
-                guard predicate(lhs, rhs) == predicate(lhs, rhs) else { continue }
-                return predicate(lhs, rhs)
-            }
-            return false
+    var taskSortDescriptor: SortDescriptor<ToDoTask> {
+        return switch self {
+            case .creation:     .init(\ToDoTask.creationDate)
+            case .deadline:     .init(\ToDoTask.deadline)
+            case .estimation:   .init(\ToDoTask.estimation)
+            case .name:         .init(\ToDoTask.name)
+            case .priority:     .init(\ToDoTask.priorityRaw)
         }
     }
 }

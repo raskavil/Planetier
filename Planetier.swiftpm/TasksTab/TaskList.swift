@@ -13,8 +13,12 @@ struct TaskList: View {
     var body: some View {
         ScrollView {
             LazyVStack(spacing: .medium) {
-                ForEach(tasks) { task in
-                    TaskCell(task: task, edit: { editedTask = .edit($0) })
+                SortedQueryForEach(sort: sorting.array.map(\.taskSortDescriptor)) { (task: ToDoTask) in
+                    TaskCell(
+                        task: task,
+                        edit: { editedTask = .edit($0) },
+                        delete: { context.delete($0) }
+                    )
                         .padding(.medium + .small)
                         .background {
                             RoundedRectangle(cornerRadius: .defaultRadius)
@@ -48,7 +52,7 @@ struct TaskList: View {
             }
         }
         .taskEditView(input: $editedTask)
-        .taskSortView(isPresented: $isEditingSort, input: sorting, save: { sorting = $0 })
+        .taskSortView(isPresented: $isEditingSort, input: sorting, save: { newValue in withAnimation { sorting = newValue } })
     }
 }
 
