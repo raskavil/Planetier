@@ -191,7 +191,7 @@ struct TaskEditView<Superview: View>: View {
                                         image: priority.uiImage,
                                         style: priority.badgeStyle(for: representedTask.priority)
                                     )
-                                    .matchedGeometryEffect(id: "priority_" + priority.rawValue, in: namespace)
+                                    .matchedGeometryEffect(id: "priority_\(priority.rawValue)", in: namespace)
                                 }
                             }
                         } else {
@@ -200,7 +200,7 @@ struct TaskEditView<Superview: View>: View {
                                 image: representedTask.priority.uiImage,
                                 style: representedTask.priority.badgeStyle(for: representedTask.priority)
                             )
-                            .matchedGeometryEffect(id: "priority_" + representedTask.priority.rawValue, in: namespace)
+                            .matchedGeometryEffect(id: "priority_\(representedTask.priority.rawValue)", in: namespace)
                         }
                     }
                 }
@@ -211,7 +211,7 @@ struct TaskEditView<Superview: View>: View {
     @ViewBuilder private var deadline: some View {
         if let representedTask {
             switch step {
-                case .name:
+                case .name, .priority:
                     EmptyView()
                 case .deadline:
                     Checkbox(
@@ -234,7 +234,6 @@ struct TaskEditView<Superview: View>: View {
                                 get: { deadline },
                                 set: { self.representedTask?.deadline = $0 }
                             ),
-                            in: PartialRangeFrom(.now),
                             displayedComponents: [.date]
                         )
                         .bold()

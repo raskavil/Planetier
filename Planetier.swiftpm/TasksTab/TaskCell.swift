@@ -3,6 +3,12 @@ import SwiftData
 
 struct TaskCell: View {
     
+    static var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM/dd/yy"
+        return formatter
+    }
+    
     @Environment(\.modelContext) var context
     
     let task: ToDoTask
@@ -68,7 +74,7 @@ struct TaskCell: View {
                 }
                 if let deadline = task.deadline {
                     Badge(
-                        text: TaskEditView<EmptyView>.dateFormatter.string(from: deadline),
+                        text: Self.dateFormatter.string(from: deadline),
                         image: .init(systemName: "calendar.badge.clock"),
                         style: .init(
                             contentColor: .white,

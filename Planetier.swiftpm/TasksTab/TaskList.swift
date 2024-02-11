@@ -5,7 +5,10 @@ struct TaskList: View {
     
     @Environment(\.modelContext) var context
     @Query var tasks: [ToDoTask]
+    
     @State var editedTask: TaskEditViewInput?
+    @State var isEditingSort = false
+    @State var sorting: TaskSortInput = .init()
     
     var body: some View {
         ScrollView {
@@ -20,6 +23,7 @@ struct TaskList: View {
                         }
                         .padding(2)
                         .padding(.horizontal, .default)
+                        .transition(.opacity)
                         .clipped()
                 }
             }
@@ -29,7 +33,7 @@ struct TaskList: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("", systemImage: "arrow.up.and.down.text.horizontal") {
-                    
+                    isEditingSort = true
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
@@ -44,6 +48,7 @@ struct TaskList: View {
             }
         }
         .taskEditView(input: $editedTask)
+        .taskSortView(isPresented: $isEditingSort, input: sorting, save: { sorting = $0 })
     }
 }
 

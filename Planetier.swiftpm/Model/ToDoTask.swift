@@ -8,8 +8,12 @@ class ToDoTask {
         case todo, progress, done
     }
     
-    enum Priority: String, Codable, Equatable, CaseIterable {
+    enum Priority: Int, Codable, Comparable, CaseIterable {
         case high, medium, low
+        
+        static func <(lhs: Self, rhs: Self) -> Bool {
+            lhs.rawValue < rhs.rawValue
+        }
     }
 
     let id: String
