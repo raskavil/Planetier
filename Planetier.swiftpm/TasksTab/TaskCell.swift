@@ -27,7 +27,7 @@ struct TaskCell: View {
                         Button("In progress") { task.state = .progress }
                         Button("Done") { task.state = .done }
                     }
-                    Button("Bookmark", systemImage: "bookmark") {}
+                    // Button("Bookmark", systemImage: "bookmark") {}
                     Button("Edit", systemImage: "square.and.pencil") { edit(task) }
                     Button("Delete", systemImage: "trash") { delete(task) }
                 } label: {

@@ -7,7 +7,7 @@ struct ContentView: View {
                 .tabItem {
                     Label("Tasks", systemImage: "list.bullet.clipboard")
                 }
-            Text("Groups placeholder")
+            GroupsTab()
                 .tabItem {
                     Label("Groups", systemImage: "rectangle.3.group.fill")
                 }
