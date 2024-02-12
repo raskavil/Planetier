@@ -10,7 +10,7 @@ struct Planetier: App {
     
     init() {
         do {
-            modelContainer = try ModelContainer(for: ToDoTask.self)
+            modelContainer = try ModelContainer(for: ToDoTask.self, Group.self)
         } catch {
             fatalError()
         }

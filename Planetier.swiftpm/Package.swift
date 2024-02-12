@@ -22,15 +22,12 @@ let package = Package(
             appIcon: .placeholder(icon: .rocket),
             accentColor: .presetColor(.orange),
             supportedDeviceFamilies: [
-                .pad,
                 .phone
             ],
             supportedInterfaceOrientations: [
-                .portrait,
-                .landscapeRight,
-                .landscapeLeft,
-                .portraitUpsideDown(.when(deviceFamilies: [.pad]))
-            ]
+                .portrait
+            ],
+            appCategory: .productivity
         )
     ],
     targets: [

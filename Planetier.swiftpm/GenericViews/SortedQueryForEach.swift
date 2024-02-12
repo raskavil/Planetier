@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 
+/// View used to query for SwiftData items and include them in a ForEach and simultaneously allow for a dynamic sort.
 struct SortedQueryForEach<Item: PersistentModel, Content: View>: View {
     
     @Query var items: [Item]

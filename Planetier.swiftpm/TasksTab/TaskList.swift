@@ -37,17 +37,17 @@ struct TaskList: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("", systemImage: "arrow.up.and.down.text.horizontal") {
+                Button(systemImage: "arrow.up.and.down.text.horizontal") {
                     isEditingSort = true
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button("", systemImage: "text.append") {
+                Button(systemImage: "text.append") {
                     
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button("", systemImage: "plus") {
+                Button(systemImage: "plus") {
                     editedTask = .new
                 }
             }

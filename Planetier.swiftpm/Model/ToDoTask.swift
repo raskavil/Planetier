@@ -16,7 +16,7 @@ class ToDoTask {
         }
     }
 
-    let id: String
+    @Attribute(.unique) let id: String
     let creationDate: Date
     var name: String
     var stateRaw: State.RawValue

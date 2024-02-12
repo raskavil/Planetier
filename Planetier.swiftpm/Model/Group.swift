@@ -3,7 +3,8 @@ import Foundation
 
 @Model
 class Group {
-    let id: String
+
+    @Attribute(.unique) let id: String
     let creationDate: Date
     var name: String
     var planetName: String

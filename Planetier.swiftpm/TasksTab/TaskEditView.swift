@@ -357,7 +357,7 @@ struct TaskEditView<Superview: View>: View {
                                 .padding(.vertical, .medium)
                             Spacer()
                         }
-                        Button("", systemImage: "trash.fill") {
+                        Button(systemImage: "trash.fill") {
                             withAnimation(.easeIn(duration: 0.2)) {
                                 self.representedTask?.subtasks.firstIndex(of: subtask)
                                     .map { self.representedTask?.subtasks.remove(atOffsets: [$0]) }
@@ -548,12 +548,5 @@ extension Binding {
         } set: { newChildValue in
             optionalSelf.wrappedValue?[keyPath: keyPath] = newChildValue
         }
-    }
-}
-
-extension ModelContainer {
-    
-    static var previewContainer: ModelContainer {
-        try! ModelContainer(for: ToDoTask.self, configurations: .init(isStoredInMemoryOnly: true))
     }
 }
