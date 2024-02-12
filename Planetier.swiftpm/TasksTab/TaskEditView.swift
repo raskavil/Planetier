@@ -125,12 +125,12 @@ struct TaskEditView<Superview: View>: View {
         if let representedTask {
             switch step {
                 case .name:
-                    Text("What's the task going to be called?")
+                    Text(.init(localized: "task.edit.name_prompt"))
                         .font(.headline)
                         .bold()
                         .foregroundStyle(.black)
                     TextField(
-                        "Name of the task",
+                        "task.edit.name_placeholder",
                         text: .init(
                             get: { representedTask.name },
                             set: { self.representedTask?.name = $0 }
@@ -152,7 +152,7 @@ struct TaskEditView<Superview: View>: View {
                             .foregroundStyle(.clear)
                     }
                     if displayingNameError {
-                        Text("Name of a task should not be empty.")
+                        Text(.init(localized: "task.edit.name_error"))
                             .font(.caption)
                             .bold()
                             .foregroundStyle(.tint)
@@ -181,7 +181,7 @@ struct TaskEditView<Superview: View>: View {
             default:
                 if let representedTask {
                     HStack(spacing: .medium) {
-                        Text("Priority")
+                        Text(.init(localized: "task.priority"))
                             .bold()
                         if step == .priority {
                             ForEach(ToDoTask.Priority.allCases, id: \.rawValue) { priority in
@@ -220,7 +220,7 @@ struct TaskEditView<Superview: View>: View {
                             set: { self.representedTask?.deadline = $0 ? .now : nil }
                         ),
                         label: {
-                            Text("Does the task have a deadline?")
+                            Text(.init(localized: "task.edit.deadline_prompt"))
                                 .font(.headline)
                                 .foregroundStyle(.black)
                                 .bold()
@@ -229,7 +229,7 @@ struct TaskEditView<Superview: View>: View {
                     )
                     if let deadline = representedTask.deadline {
                         DatePicker(
-                            "Deadline",
+                            "task.edit.deadline",
                             selection: .init(
                                 get: { deadline },
                                 set: { self.representedTask?.deadline = $0 }
@@ -246,7 +246,7 @@ struct TaskEditView<Superview: View>: View {
                 default:
                     if let deadline = representedTask.deadline {
                         HStack {
-                            Text("Deadline")
+                            Text(.init(localized: "task.edit.deadline"))
                                 .bold()
                             Spacer()
                             Text(Self.dateFormatter.string(from: deadline))
@@ -275,7 +275,7 @@ struct TaskEditView<Superview: View>: View {
                             set: { self.representedTask?.estimation = $0 ? 0 : nil }
                         ),
                         label: {
-                            Text("Do you want to add an estimation?")
+                            Text(.init(localized: "task.edit.add_estimation"))
                                 .font(.headline)
                                 .foregroundStyle(.black)
                                 .bold()
@@ -284,7 +284,7 @@ struct TaskEditView<Superview: View>: View {
                     )
                     if let estimation = representedTask.estimation {
                         Picker(
-                            "Estimation",
+                            "task.edit.estimation",
                             selection: .init(
                                 get: { Int(estimation / 60 / 60) },
                                 set: { self.representedTask?.estimation = Double($0) * 60 * 60 }
@@ -309,8 +309,9 @@ struct TaskEditView<Superview: View>: View {
                 default:
                     if let estimation = representedTask.estimation.map({ Int($0 / 60 / 60) }) {
                         HStack(spacing: .small) {
-                            Text("Estimation ")
+                            Text(.init(localized: "task.edit.estimation"))
                                 .bold()
+                            Spacer()
                             Text(estimation.estimationText)
                                 .bold()
                                 .matchedGeometryEffect(
@@ -390,7 +391,7 @@ struct TaskEditView<Superview: View>: View {
                         label: {
                             HStack(spacing: .medium) {
                                 Image(systemName: "plus")
-                                Text("Add new subtask")
+                                Text(.init(localized: "task.edit.subtask_new"))
                                 Spacer()
                             }
                             .bold()
@@ -430,7 +431,11 @@ struct TaskEditView<Superview: View>: View {
     }
     
     private var nextButton: some View {
-        LargeButton(title: step != .overview ? "Next" : "Save") {
+        LargeButton(
+            title: step != .overview 
+            ? .init(localized: "button.title.next")
+            : .init(localized: "button.title.save")
+        ) {
             guard let nextStep else {
                 finish()
                 return
@@ -480,9 +485,9 @@ extension ToDoTask.Priority {
     
     var uiText: String {
         switch self {
-            case .high:     "High"
-            case .medium:   "Medium"
-            case .low:      "Low"
+            case .high:     .init(localized: "task.priority.high")
+            case .medium:   .init(localized: "task.priority.medium")
+            case .low:      .init(localized: "task.priority.low")
         }
     }
     
@@ -507,7 +512,7 @@ extension ToDoTask.Priority {
 extension Int {
 
     var estimationText: String {
-        "\(self) " + (self == 1 ? "hour" : "hours")
+        .init(localized: "task.edit.estimation_\(self)hours")
     }
 }
 

@@ -8,6 +8,7 @@ struct TaskList: View {
     
     @State var editedTask: TaskEditViewInput?
     @State var isEditingSort = false
+    @State var presentedTaskToDelete: ToDoTask?
     @State var sorting: TaskSortInput = .init()
     
     var body: some View {
@@ -17,7 +18,7 @@ struct TaskList: View {
                     TaskCell(
                         task: task,
                         edit: { editedTask = .edit($0) },
-                        delete: { context.delete($0) }
+                        delete: { presentedTaskToDelete = $0 }
                     )
                         .padding(.medium + .small)
                         .background {
@@ -53,6 +54,26 @@ struct TaskList: View {
         }
         .taskEditView(input: $editedTask)
         .taskSortView(isPresented: $isEditingSort, input: sorting, save: { newValue in withAnimation { sorting = newValue } })
+        .dialog(
+            isPresented: .init(
+                get: { presentedTaskToDelete != nil },
+                set: { presentedTaskToDelete = $0 ? presentedTaskToDelete : nil }
+            ),
+            accessoryView: Image("delete", bundle: .main)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 150),
+            title: "Delete",
+            text: "Do you really want to permanently delete this task?",
+            buttonTitle: "Delete",
+            buttonStyle: .init(backgroundColor: .red),
+            confirmation: {
+                if let presentedTaskToDelete {
+                    self.presentedTaskToDelete = nil
+                    context.delete(presentedTaskToDelete)
+                }
+            }
+        )
     }
 }
 

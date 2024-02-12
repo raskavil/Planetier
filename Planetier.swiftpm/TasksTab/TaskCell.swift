@@ -87,7 +87,7 @@ struct TaskCell: View {
                 Spacer()
             }
             if isShowingSubtasks && task.subtasks.isEmpty == false {
-                VStack(alignment: .leading, spacing: -2) {
+                VStack(alignment: .leading, spacing: -1) {
                     ForEach(task.subtasks) { subtask in
                         HStack(alignment: .center, spacing: 0) {
                             Checkbox(
