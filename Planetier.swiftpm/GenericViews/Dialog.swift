@@ -48,6 +48,9 @@ extension View {
 }
 struct Dialog<Content: View, Accessory: View>: View {
     
+    static var width: CGFloat { 250 }
+    static var backgroundAnimation: Animation { .linear(duration: 0.1) }
+    
     @Binding var isPresented: Bool
     let accessoryView: Accessory?
     let title: String
@@ -57,12 +60,14 @@ struct Dialog<Content: View, Accessory: View>: View {
     let confirmation: () -> Void
     let content: Content
     
+    @State var backgroundOpacity = 0.0
+    
     var body: some View {
         content
             .fullScreenCover(isPresented: $isPresented) {
                 VStack(alignment: .leading, spacing: .medium) {
                     HStack {
-                        Button { isPresented = false } label: {
+                        Button(action: close) {
                             Image(systemName: "xmark")
                                 .foregroundStyle(.black)
                                 .bold()
@@ -73,7 +78,7 @@ struct Dialog<Content: View, Accessory: View>: View {
                         HStack {
                             Spacer()
                             accessoryView
-                                .frame(maxWidth: 250)
+                                .frame(maxWidth: Self.width)
                             Spacer()
                         }
                     }
@@ -88,20 +93,33 @@ struct Dialog<Content: View, Accessory: View>: View {
                             .padding(.top, .medium)
                     }
                 }
-                .frame(width: 250)
+                .frame(width: Self.width)
                 .padding(.default)
                 .background {
                     RoundedRectangle(cornerRadius: .defaultRadius)
                         .foregroundStyle(.white)
                 }
-                .presentationBackground {
-                    Color.black.opacity(0.3)
-                        .onTapGesture {
-                            isPresented = false
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        withAnimation(Self.backgroundAnimation) {
+                            backgroundOpacity = 0.2
                         }
+                    }
+                }
+                .presentationBackground {
+                    Color.black.opacity(backgroundOpacity)
+                        .onTapGesture(perform: close)
                 }
                 .presentationBackgroundInteraction(.enabled)
             }
+    }
+    
+    private func close() {
+        withAnimation(Self.backgroundAnimation) {
+            backgroundOpacity = 0
+        } completion: {
+            isPresented = false
+        }
     }
     
     init(

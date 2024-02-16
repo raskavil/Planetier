@@ -2,17 +2,22 @@ import SwiftUI
 import SwiftData
 
 struct GroupCell: View {
-    
-    @State var tasksExpanded = false
+        
     let group: Group
+    let delete: (Group) -> Void
+    let edit: (Group) -> Void
+    @State var tasksExpanded = false
     
     var body: some View {
         VStack {
             ZStack(alignment: .bottom) {
+                Color.orange
                 VStack(spacing: 0) {
-                    Image("mars-background")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
+                    if tasksExpanded == false {
+                        Image("mars-background")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    }
                     Image("mars-background")
                         .resizable()
                         .aspectRatio(contentMode: .fill)
@@ -26,7 +31,7 @@ struct GroupCell: View {
                             .bold()
                             .foregroundStyle(.white)
                         HStack(spacing: .medium) {
-                            Button(systemImage: "chevron.down") {
+                            Button(systemImage: "chevron.up") {
                                 withAnimation {
                                     tasksExpanded.toggle()
                                 }
@@ -45,6 +50,20 @@ struct GroupCell: View {
                                 .padding(.trailing, 2)
                             Text("85% done")
                                 .foregroundStyle(.white)
+                        }
+                        if tasksExpanded {
+                            ForEach(group.tasks) {
+                                TaskCell(task: $0, edit: { _ in }, delete: { _ in })
+                                    .padding(.medium + .small)
+                                    .background {
+                                        RoundedRectangle(cornerRadius: .defaultRadius)
+                                            .foregroundStyle(.white)
+                                            .shadow(radius: 2)
+                                    }
+                                    .padding(2)
+                                    .transition(.opacity)
+                                    .clipped()
+                            }
                         }
                     }
                     Spacer()
@@ -68,7 +87,8 @@ struct GroupCellPreviews: PreviewProvider {
         id: UUID().uuidString,
         creationDate: .now,
         name: "House chores",
-        planetName: "YPL-125-Z"
+        planetName: "YPL-125-Z",
+        tasks: []
     )
     
     static var modelContainer: ModelContainer {
@@ -81,7 +101,7 @@ struct GroupCellPreviews: PreviewProvider {
     }
     
     static var previews: some View {
-        GroupCell(group: group)
+        GroupCell(group: group, delete: { _ in }, edit: { _ in })
             .modelContainer(modelContainer)
             .clipShape(RoundedRectangle(cornerRadius: .defaultRadius))
             .padding(.default)

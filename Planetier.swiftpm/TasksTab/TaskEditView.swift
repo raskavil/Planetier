@@ -59,6 +59,7 @@ struct TaskEditView<Superview: View>: View {
 
     enum Step: CaseIterable {
         case name
+        case group
         case priority
         case deadline
         case estimation
@@ -72,6 +73,7 @@ struct TaskEditView<Superview: View>: View {
     @Binding private var input: Input?
     private let superview: Superview
 
+    @Query private var groups: [Group]
     @State private var representedTask: ToDoTaskRepresentation?
     @State private var step: Step = .name
     @State private var displayingNameError = false
@@ -105,6 +107,7 @@ struct TaskEditView<Superview: View>: View {
                     GradientScrollView(contentInsets: .init(vertical: .large)) {
                         VStack(alignment: .leading, spacing: .default) {
                             name
+                            group
                             priority
                             deadline
                             estimation
@@ -173,10 +176,41 @@ struct TaskEditView<Superview: View>: View {
         }
     }
     
+    // MARK: - Group segment
+    @ViewBuilder private var group: some View {
+        switch step {
+            case .name:
+                EmptyView()
+            case .group:
+                Picker(
+                    "Group",
+                    selection: .init(
+                        get: { representedTask?.group?.id ?? "None" },
+                        set: { selectedId in representedTask?.group = groups.first(where: { $0.id == selectedId }) }
+                    ),
+                    content: {
+                        Text("None")
+                            .tag("none")
+                        ForEach(groups, id: \.id) { group in
+                            Text(group.name)
+                        }
+                    }
+                )
+                .pickerStyle(.menu)
+            default:
+                HStack {
+                    Text("Group")
+                        .bold()
+                    Spacer()
+                    Text(representedTask?.group?.name ?? "")
+                }
+        }
+    }
+    
     // MARK: - Priority segment
     @ViewBuilder private var priority: some View {
         switch step {
-            case .name:
+            case .name, .group:
                 EmptyView()
             default:
                 if let representedTask {
@@ -467,7 +501,7 @@ struct TaskEditView<Superview: View>: View {
                 break
             case (.some(let representation), .new):
                 modelContext.insert(representation.representedType)
-            case (.some(let representation), .edit(let task)):  
+            case (.some(let representation), .edit(let task)):
                 representation.setValues(on: task)
         }
         representedTask = nil

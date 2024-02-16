@@ -134,8 +134,15 @@ extension ToDoTask.State {
 
 #Preview {
     let container = try! ModelContainer(
-        for: ToDoTask.self,
+        for: ToDoTask.self, Group.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    let group = Group(
+        id: "previewGroup",
+        creationDate: .now,
+        name: "Preview group",
+        planetName: "XW21",
+        tasks: []
     )
     let task = ToDoTask(
         id: "preview",
@@ -146,8 +153,11 @@ extension ToDoTask.State {
         subtasks: [.init(name: "Random subtask"), .init(name: "Random subtask 2")],
         estimation: nil,
         deadline: nil,
-        calendarEventID: nil
+        calendarEventID: nil,
+        group: group
     )
+    group.tasks.append(task)
+    container.mainContext.insert(group)
     return TaskCell(task: task, edit: { _ in }, delete: { _ in })
         .modelContext(.init(container))
 }
