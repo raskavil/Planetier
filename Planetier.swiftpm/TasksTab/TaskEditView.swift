@@ -98,6 +98,9 @@ struct TaskEditView<Superview: View>: View {
         superview
             .onChange(of: input) { _, newValue in
                 representedTask = newValue?.taskRepresentation
+                if representedTask?.group == nil {
+                    representedTask?.group = groups.first
+                }
                 displayingNameError = false
                 step = .name
             }
@@ -176,33 +179,45 @@ struct TaskEditView<Superview: View>: View {
         }
     }
     
+    var groupBinding: Binding<String> {
+        .init(
+            get: { representedTask?.group?.id ?? groups.first?.id ?? "" },
+            set: { selectedId in representedTask?.group = groups.first(where: { $0.id == selectedId }) }
+        )
+    }
+    
     // MARK: - Group segment
     @ViewBuilder private var group: some View {
         switch step {
             case .name:
                 EmptyView()
             case .group:
-                Picker(
-                    "Group",
-                    selection: .init(
-                        get: { representedTask?.group?.id ?? "None" },
-                        set: { selectedId in representedTask?.group = groups.first(where: { $0.id == selectedId }) }
-                    ),
-                    content: {
-                        Text("None")
-                            .tag("none")
-                        ForEach(groups, id: \.id) { group in
-                            Text(group.name)
+                HStack(spacing: .medium) {
+                    Text("Group")
+                        .bold()
+                    Spacer()
+                    Picker(
+                        "Group",
+                        selection: groupBinding,
+                        content: {
+                            ForEach(groups, id: \.id) { group in
+                                Text(group.name)
+                            }
                         }
-                    }
-                )
-                .pickerStyle(.menu)
+                    )
+                    .bold()
+                    .foregroundStyle(.black)
+                    .matchedGeometryEffect(id: "TaskEditGroupView", in: namespace)
+                    .pickerStyle(.menu)
+                }
+                .transition(.opacity)
             default:
                 HStack {
                     Text("Group")
                         .bold()
                     Spacer()
                     Text(representedTask?.group?.name ?? "")
+                        .matchedGeometryEffect(id: "TaskEditGroupView", in: namespace)
                 }
         }
     }
@@ -229,6 +244,7 @@ struct TaskEditView<Superview: View>: View {
                                 }
                             }
                         } else {
+                            Spacer()
                             Badge(
                                 text: representedTask.priority.uiText,
                                 image: representedTask.priority.uiImage,
@@ -237,6 +253,7 @@ struct TaskEditView<Superview: View>: View {
                             .matchedGeometryEffect(id: "priority_\(representedTask.priority.rawValue)", in: namespace)
                         }
                     }
+                    .transition(.opacity)
                 }
         }
     }

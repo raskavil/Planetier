@@ -21,8 +21,6 @@ struct TaskSortInput: Codable, Identifiable, Hashable {
             }
         }
     }
-    
-    var useGroups = false
 }
 
 extension TaskSortInput.Predicate {

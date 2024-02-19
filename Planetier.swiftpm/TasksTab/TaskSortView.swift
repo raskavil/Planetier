@@ -60,25 +60,18 @@ struct TaskSortView<Content: View>: View {
                                 .bold()
                             Spacer()
                         }
+                        .padding(.horizontal, .default)
                         .listRowSeparator(.hidden)
                         .listRowInsets(.init())
                     }
+                    .padding(.horizontal, -.default)
                     .listStyle(.plain)
                     .scrollBounceBehavior(.basedOnSize)
-                    Checkbox(
-                        isSelected: $input.useGroups,
-                        label: {
-                            Text("Sort by groups")
-                            Spacer()
-                        }
-                    )
-                    .foregroundStyle(.black)
-                    .bold()
-                    .padding(.vertical, .medium)
                     LargeButton(title: "Save") {
                         save(input)
                         isPresented = false
                     }
+                    .padding(.vertical, .default)
                 }
                 .padding(.default)
                 .presentationDetents([.medium])

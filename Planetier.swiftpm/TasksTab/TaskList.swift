@@ -4,12 +4,20 @@ import SwiftData
 struct TaskList: View {
     
     @Environment(\.modelContext) var context
+    @Environment(\.navigation) var navigation
     @Query var tasks: [ToDoTask]
+    @Query var groups: [Group]
     
     @State var editedTask: TaskEditViewInput?
     @State var isEditingSort = false
     @State var presentedTaskToDelete: ToDoTask?
-    @State var sorting: TaskSortInput = .init()
+    @State var isPresentingNewGroupDialog = false
+    @State var sorting: TaskSortInput = .userDefaultsValue ?? .init() {
+        didSet {
+            do { try sorting.saveToUserDefaults() }
+            catch { assertionFailure(error.localizedDescription) }
+        }
+    }
     
     var body: some View {
         ScrollView {
@@ -20,16 +28,16 @@ struct TaskList: View {
                         edit: { editedTask = .edit($0) },
                         delete: { presentedTaskToDelete = $0 }
                     )
-                        .padding(.medium + .small)
-                        .background {
-                            RoundedRectangle(cornerRadius: .defaultRadius)
-                                .foregroundStyle(.white)
-                                .shadow(radius: 2)
-                        }
-                        .padding(2)
-                        .padding(.horizontal, .default)
-                        .transition(.opacity)
-                        .clipped()
+                    .padding(.medium + .small)
+                    .background {
+                        RoundedRectangle(cornerRadius: .defaultRadius)
+                            .foregroundStyle(.white)
+                            .shadow(radius: 2)
+                    }
+                    .padding(2)
+                    .padding(.horizontal, .default)
+                    .transition(.opacity)
+                    .clipped()
                 }
             }
         }
@@ -48,6 +56,10 @@ struct TaskList: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button(systemImage: "plus") {
+                    guard groups.isEmpty == false else {
+                        isPresentingNewGroupDialog = true
+                        return
+                    }
                     editedTask = .new
                 }
             }
@@ -74,6 +86,31 @@ struct TaskList: View {
                 }
             }
         )
+        .dialog(
+            isPresented: $isPresentingNewGroupDialog,
+            title: "Create a new group",
+            text: "In order to be able to create new tasks you need to have at least one group",
+            buttonTitle: "New group",
+            confirmation: { 
+                isPresentingNewGroupDialog = false
+                navigation.performNavigation(to: .createNewGroup)
+            }
+        )
+    }
+}
+
+extension TaskSortInput {
+    
+    private static let userDefaultsKey = "Planetier.TasksTab.TaskSortInput"
+    
+    static var userDefaultsValue: Self? {
+        UserDefaults.standard.data(forKey: userDefaultsKey)
+            .flatMap { try? JSONDecoder().decode(Self.self, from: $0) }
+    }
+    
+    func saveToUserDefaults() throws {
+        let data = try JSONEncoder().encode(self)
+        UserDefaults.standard.set(data, forKey: Self.userDefaultsKey)
     }
 }
 

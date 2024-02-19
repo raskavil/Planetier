@@ -26,10 +26,25 @@ struct GroupCell: View {
                 }
                 HStack {
                     VStack(alignment: .leading, spacing: .medium) {
-                        Text(group.name)
-                            .font(.largeTitle)
-                            .bold()
+                        HStack(spacing: .zero) {
+                            Text(group.name)
+                                .font(.largeTitle)
+                                .bold()
+                                .foregroundStyle(.white)
+                            Spacer(minLength: 4)
+                            Menu {
+                                Button("Edit", systemImage: "square.and.pencil") { edit(group) }
+                                Button("Delete", systemImage: "trash") { delete(group) }
+                            } label: {
+                                Rectangle()
+                                    .foregroundStyle(.clear)
+                                    .overlay {
+                                        Image(systemName: "ellipsis")
+                                    }
+                            }
                             .foregroundStyle(.white)
+                            .frame(width: .large, height: .large)
+                        }
                         HStack(spacing: .medium) {
                             Button(systemImage: "chevron.up") {
                                 withAnimation {
@@ -42,13 +57,13 @@ struct GroupCell: View {
                                 .font(.body)
                                 .foregroundStyle(.white)
                             Circle()
-                                .trim(from: 0.4, to: 1)
+                                .trim(from: 1 - group.portionDone, to: 1)
                                 .stroke(.white, lineWidth: .small)
                                 .frame(width: .large, height: .large)
                                 .rotationEffect(.init(radians: -.pi / 2))
                                 .rotation3DEffect(.radians(.pi), axis: (0,1,0))
                                 .padding(.trailing, 2)
-                            Text("85% done")
+                            Text(group.percentageText)
                                 .foregroundStyle(.white)
                         }
                         if tasksExpanded {
@@ -78,6 +93,18 @@ struct GroupCell: View {
                 }
             }
         }
+    }
+}
+
+extension Group {
+    
+    var portionDone: Double {
+        guard tasks.count > 0 else { return 0 }
+        return Double(tasks.filter { $0.state == .done }.count) / Double(tasks.count)
+    }
+    
+    var percentageText: String {
+        "\(Int(portionDone*100))% done"
     }
 }
 

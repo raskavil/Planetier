@@ -28,7 +28,7 @@ extension View {
     
     func dialog<Accessory: View>(
         isPresented: Binding<Bool>,
-        accessoryView: Accessory? = nil,
+        accessoryView: Accessory? = Optional<EmptyView>.none,
         title: String,
         text: String = "",
         buttonTitle: String = "",
