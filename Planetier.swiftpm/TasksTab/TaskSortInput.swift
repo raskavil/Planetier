@@ -17,6 +17,7 @@ struct TaskSortInput: Codable, Identifiable, Hashable {
     var array: [Predicate] = Predicate.allCases {
         didSet {
             if Set(array) != Set(Predicate.allCases) {
+                array = Predicate.allCases
                 assertionFailure("Array doesn't include all parameters")
             }
         }

@@ -12,8 +12,8 @@ struct TaskCell: View {
     @Environment(\.modelContext) var context
     
     let task: ToDoTask
-    let edit: (ToDoTask) -> Void
-    let delete: (ToDoTask) -> Void
+    let edit: ((ToDoTask) -> Void)?
+    let delete: ((ToDoTask) -> Void)?
     @State var isShowingSubtasks = false
     
     var body: some View {
@@ -23,13 +23,16 @@ struct TaskCell: View {
                 Spacer(minLength: 4)
                 Menu {
                     Menu("State") {
-                        Button("Todo") { task.state = .todo }
-                        Button("In progress") { task.state = .progress }
-                        Button("Done") { task.state = .done }
+                        Button("Todo") { withAnimation { task.state = .todo } }
+                        Button("In progress") { withAnimation { task.state = .progress } }
+                        Button("Done") { withAnimation { task.state = .done } }
                     }
-                    // Button("Bookmark", systemImage: "bookmark") {}
-                    Button("Edit", systemImage: "square.and.pencil") { edit(task) }
-                    Button("Delete", systemImage: "trash") { delete(task) }
+                    if let edit {
+                        Button("Edit", systemImage: "square.and.pencil") { edit(task) }
+                    }
+                    if let delete {
+                        Button("Delete", systemImage: "trash") { delete(task) }
+                    }
                 } label: {
                     Rectangle()
                         .foregroundStyle(.clear)

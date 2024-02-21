@@ -6,6 +6,8 @@ struct GroupCell: View {
     let group: Group
     let delete: (Group) -> Void
     let edit: (Group) -> Void
+    let editTask: (ToDoTask) -> Void
+    let deleteTask: (ToDoTask) -> Void
     @State var tasksExpanded = false
     
     var body: some View {
@@ -68,7 +70,7 @@ struct GroupCell: View {
                         }
                         if tasksExpanded {
                             ForEach(group.tasks) {
-                                TaskCell(task: $0, edit: { _ in }, delete: { _ in })
+                                TaskCell(task: $0, edit: editTask, delete: deleteTask)
                                     .padding(.medium + .small)
                                     .background {
                                         RoundedRectangle(cornerRadius: .defaultRadius)
@@ -128,7 +130,7 @@ struct GroupCellPreviews: PreviewProvider {
     }
     
     static var previews: some View {
-        GroupCell(group: group, delete: { _ in }, edit: { _ in })
+        GroupCell(group: group, delete: { _ in }, edit: { _ in }, editTask: { _ in }, deleteTask: { _ in })
             .modelContainer(modelContainer)
             .clipShape(RoundedRectangle(cornerRadius: .defaultRadius))
             .padding(.default)

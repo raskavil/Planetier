@@ -49,10 +49,13 @@ struct TaskSortView<Content: View>: View {
                         .frame(width: .large, height: .large)
                         Spacer()
                     }
+                    
                     Text("Sorting priority")
                         .font(.title)
                         .bold()
-                        .padding(.vertical, .medium)
+                        .padding(.top, .large)
+                        .padding(.bottom, .default)
+                    
                     List($input.array, editActions: .move) { value in
                         HStack {
                             Image(systemName: "mount.fill")
@@ -67,11 +70,14 @@ struct TaskSortView<Content: View>: View {
                     .padding(.horizontal, -.default)
                     .listStyle(.plain)
                     .scrollBounceBehavior(.basedOnSize)
+                    
+                    Spacer(minLength: 0)
+                    
                     LargeButton(title: "Save") {
                         save(input)
                         isPresented = false
                     }
-                    .padding(.vertical, .default)
+                    .padding(.top, .default)
                 }
                 .padding(.default)
                 .presentationDetents([.medium])

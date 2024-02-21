@@ -10,9 +10,16 @@ struct TaskList: View {
     
     @State var editedTask: TaskEditViewInput?
     @State var isEditingSort = false
+    @State var isEditingFilter = false
     @State var presentedTaskToDelete: ToDoTask?
     @State var isPresentingNewGroupDialog = false
     @State var sorting: TaskSortInput = .userDefaultsValue ?? .init() {
+        didSet {
+            do { try sorting.saveToUserDefaults() }
+            catch { assertionFailure(error.localizedDescription) }
+        }
+    }
+    @State var filter: TaskFilterInput = .userDefaultsValue ?? .init() {
         didSet {
             do { try sorting.saveToUserDefaults() }
             catch { assertionFailure(error.localizedDescription) }
@@ -51,7 +58,7 @@ struct TaskList: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button(systemImage: "text.append") {
-                    
+                    isEditingFilter = true
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
@@ -66,6 +73,7 @@ struct TaskList: View {
         }
         .taskEditView(input: $editedTask)
         .taskSortView(isPresented: $isEditingSort, input: sorting, save: { newValue in withAnimation { sorting = newValue } })
+        .taskFilterView(isPresented: $isEditingFilter, input: filter, save: { newValue in withAnimation { filter = newValue }})
         .dialog(
             isPresented: .init(
                 get: { presentedTaskToDelete != nil },
@@ -99,9 +107,12 @@ struct TaskList: View {
     }
 }
 
-extension TaskSortInput {
+protocol UserDefaultsSingleton: Codable {
     
-    private static let userDefaultsKey = "Planetier.TasksTab.TaskSortInput"
+    static var userDefaultsKey: String { get }
+}
+
+extension UserDefaultsSingleton {
     
     static var userDefaultsValue: Self? {
         UserDefaults.standard.data(forKey: userDefaultsKey)
@@ -112,6 +123,14 @@ extension TaskSortInput {
         let data = try JSONEncoder().encode(self)
         UserDefaults.standard.set(data, forKey: Self.userDefaultsKey)
     }
+}
+
+extension TaskSortInput: UserDefaultsSingleton {
+    static let userDefaultsKey = "Planetier.TasksTab.TaskSortInput"
+}
+
+extension TaskFilterInput: UserDefaultsSingleton {
+    static let userDefaultsKey = "Planetier.TasksTab.TaskFilterInput"
 }
 
 #Preview {
