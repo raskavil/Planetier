@@ -262,7 +262,7 @@ struct TaskEditView<Superview: View>: View {
     @ViewBuilder private var deadline: some View {
         if let representedTask {
             switch step {
-                case .name, .priority:
+                case .name, .group, .priority:
                     EmptyView()
                 case .deadline:
                     Checkbox(

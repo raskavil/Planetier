@@ -18,7 +18,7 @@ struct GroupList: View {
     var body: some View {
         ScrollView {
             VStack(spacing: .medium) {
-                SortedQueryForEach(sort: []) { group in
+                QueryForEach { group in
                     GroupCell(
                         group: group,
                         delete: { presentedGroupToDelete = $0 },
@@ -38,6 +38,11 @@ struct GroupList: View {
         .navigationTitle("Groups")
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(systemImage: "arrow.up.and.down.text.horizontal") {
+                    isEditingSort = true
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button(systemImage: "plus") {
                     editInput = .new

@@ -29,7 +29,7 @@ struct TaskList: View {
     var body: some View {
         ScrollView {
             LazyVStack(spacing: .medium) {
-                SortedQueryForEach(sort: sorting.array.map(\.taskSortDescriptor)) { (task: ToDoTask) in
+                QueryForEach(sort: sorting.array.map(\.taskSortDescriptor), filter: filter.filterPredicate) { (task: ToDoTask) in
                     TaskCell(
                         task: task,
                         edit: { editedTask = .edit($0) },
