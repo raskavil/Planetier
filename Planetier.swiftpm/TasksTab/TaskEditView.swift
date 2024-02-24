@@ -517,9 +517,9 @@ struct TaskEditView<Superview: View>: View {
             case (nil, _), (_, .none):
                 break
             case (.some(let representation), .new):
-                modelContext.insert(representation.representedType)
+                withAnimation { modelContext.insert(representation.representedType) }
             case (.some(let representation), .edit(let task)):
-                representation.setValues(on: task)
+                withAnimation { representation.setValues(on: task) }
         }
         representedTask = nil
         input = nil

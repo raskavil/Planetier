@@ -35,13 +35,6 @@ struct TaskList: View {
                         edit: { editedTask = .edit($0) },
                         delete: { presentedTaskToDelete = $0 }
                     )
-                    .padding(.medium + .small)
-                    .background {
-                        RoundedRectangle(cornerRadius: .defaultRadius)
-                            .foregroundStyle(.white)
-                            .shadow(radius: 2)
-                    }
-                    .padding(2)
                     .padding(.horizontal, .default)
                     .transition(.opacity)
                     .clipped()

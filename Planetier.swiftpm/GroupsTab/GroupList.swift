@@ -2,9 +2,11 @@ import SwiftUI
 
 struct GroupList: View {
     
+    @Namespace var namespace
     @Environment(\.modelContext) var modelContext
     @State var editInput: GroupEditViewInput?
     @State var editedTask: TaskEditViewInput?
+    @State var expandedGroup: Group?
     @State var isEditingSort = false
     @State var presentedTaskToDelete: ToDoTask?
     @State var presentedGroupToDelete: Group?
@@ -18,16 +20,22 @@ struct GroupList: View {
     var body: some View {
         ScrollView {
             VStack(spacing: .medium) {
-                QueryForEach { group in
+                QueryForEach { (group: Group) in
                     GroupCell(
                         group: group,
+                        expand: { group in
+                            withAnimation {
+                                expandedGroup = group
+                            }
+                        },
                         delete: { presentedGroupToDelete = $0 },
                         edit: { editInput = .edit($0) },
                         editTask: { editedTask = .edit($0) },
-                        deleteTask: { presentedTaskToDelete = $0 }
+                        deleteTask: { presentedTaskToDelete = $0 },
+                        namespace: namespace
                     )
-                        .clipShape(RoundedRectangle(cornerRadius: .defaultRadius))
-                        .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: .defaultRadius))
+                    .clipped()
                 }
                 Rectangle()
                     .foregroundStyle(.clear)
@@ -92,6 +100,7 @@ struct GroupList: View {
                 }
             }
         )
+        .groupView($expandedGroup, namespace: namespace)
     }
 }
 

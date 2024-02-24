@@ -120,6 +120,13 @@ struct TaskCell: View {
                 .padding(.top, .default)
             }
         }
+        .padding(.medium + .small)
+        .background {
+            RoundedRectangle(cornerRadius: .defaultRadius)
+                .foregroundStyle(.white)
+                .shadow(radius: 2)
+        }
+        .padding(2)
     }
 }
 
