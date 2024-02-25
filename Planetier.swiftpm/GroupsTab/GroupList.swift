@@ -57,6 +57,14 @@ struct GroupList: View {
                 }
             }
         }
+        .groupView(
+            $expandedGroup,
+            delete: { group in withAnimation { presentedGroupToDelete = group } },
+            edit: { group in withAnimation { editInput = .edit(group) } },
+            editTask: { task in withAnimation { editedTask = .edit(task) } },
+            deleteTask: { task in withAnimation { presentedTaskToDelete = task } },
+            namespace: namespace
+        )
         .groupEditView(input: $editInput)
         .taskEditView(input: $editedTask)
         .taskSortView(isPresented: $isEditingSort, input: sorting, save: { newValue in withAnimation { sorting = newValue } })
@@ -100,7 +108,6 @@ struct GroupList: View {
                 }
             }
         )
-        .groupView($expandedGroup, namespace: namespace)
     }
 }
 
