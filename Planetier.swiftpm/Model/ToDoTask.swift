@@ -26,6 +26,7 @@ class ToDoTask {
     var deadline: Date?
     var calendarEventID: String?
     var group: Group?
+    var timeSpent: [TimeInterval]
 
     @Transient var priority: Priority {
         get {
@@ -55,7 +56,8 @@ class ToDoTask {
         estimation: TimeInterval?,
         deadline: Date?,
         calendarEventID: String?,
-        group: Group?
+        group: Group?,
+        timeSpent: [TimeInterval]
     ) {
         self.id = id
         self.creationDate = creationDate
@@ -67,6 +69,7 @@ class ToDoTask {
         self.deadline = deadline
         self.calendarEventID = calendarEventID
         self.group = group
+        self.timeSpent = timeSpent
     }
     
     convenience init(
@@ -79,7 +82,8 @@ class ToDoTask {
         estimation: TimeInterval?,
         deadline: Date?,
         calendarEventID: String?,
-        group: Group?
+        group: Group?,
+        timeSpent: [TimeInterval]
     ) {
         self.init(
             id: id,
@@ -91,7 +95,8 @@ class ToDoTask {
             estimation: estimation,
             deadline: deadline,
             calendarEventID: calendarEventID,
-            group: group
+            group: group,
+            timeSpent: timeSpent
         )
     }
 }
@@ -123,6 +128,7 @@ struct ToDoTaskRepresentation: ModelRepresentation, Identifiable, Equatable {
     var deadline: Date?
     var calendarEventID: String?
     var group: Group?
+    var timeSpent: [TimeInterval]
 
     var representedType: ToDoTask {
         .init(
@@ -135,7 +141,8 @@ struct ToDoTaskRepresentation: ModelRepresentation, Identifiable, Equatable {
             estimation: estimation,
             deadline: deadline,
             calendarEventID: calendarEventID,
-            group: group
+            group: group,
+            timeSpent: timeSpent
         )
     }
     
@@ -148,6 +155,7 @@ struct ToDoTaskRepresentation: ModelRepresentation, Identifiable, Equatable {
         representedType.deadline = deadline
         representedType.calendarEventID = calendarEventID
         representedType.group = group
+        representedType.timeSpent = timeSpent
     }
 
     init(representedType task: ToDoTask) {
@@ -161,6 +169,7 @@ struct ToDoTaskRepresentation: ModelRepresentation, Identifiable, Equatable {
         deadline = task.deadline
         calendarEventID = task.calendarEventID
         group = task.group
+        timeSpent = task.timeSpent
     }
 
     init(
@@ -171,7 +180,8 @@ struct ToDoTaskRepresentation: ModelRepresentation, Identifiable, Equatable {
         estimation: TimeInterval? = nil,
         deadline: Date? = nil,
         calendarEventID: String? = nil,
-        group: Group? = nil
+        group: Group? = nil,
+        timeSpent: [TimeInterval] = []
     ) {
         self.id = nil
         self.creationDate = nil
@@ -183,5 +193,6 @@ struct ToDoTaskRepresentation: ModelRepresentation, Identifiable, Equatable {
         self.deadline = deadline
         self.calendarEventID  = calendarEventID
         self.group = group
+        self.timeSpent = timeSpent
     }
 }

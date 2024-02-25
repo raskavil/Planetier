@@ -41,7 +41,7 @@ struct TaskList: View {
                 }
             }
         }
-        .navigationTitle("Tasks")
+        .navigationTitle(String(localized: "tab.tasks"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -76,9 +76,9 @@ struct TaskList: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 150),
-            title: "Delete",
-            text: "Do you really want to permanently delete this task?",
-            buttonTitle: "Delete",
+            title: .init(localized: "task.delete"),
+            text: .init(localized: "task.delete.confirmation"),
+            buttonTitle: .init(localized: "task.delete"),
             buttonStyle: .init(backgroundColor: .red),
             confirmation: {
                 if let presentedTaskToDelete {
@@ -89,10 +89,10 @@ struct TaskList: View {
         )
         .dialog(
             isPresented: $isPresentingNewGroupDialog,
-            title: "Create a new group",
-            text: "In order to be able to create new tasks you need to have at least one group",
-            buttonTitle: "New group",
-            confirmation: { 
+            title: .init(localized: "task.create_group"),
+            text: .init(localized: "task.create_group.text"),
+            buttonTitle: .init(localized: "tab.groups"),
+            confirmation: {
                 isPresentingNewGroupDialog = false
                 navigation.performNavigation(to: .createNewGroup)
             }

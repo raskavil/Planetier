@@ -3,6 +3,7 @@ import SwiftUI
 struct GroupNameView: View {
     
     let group: Group
+    let isExpanded: Bool
     let edit: () -> Void
     let delete: () -> Void
     let namespace: Namespace.ID
@@ -15,8 +16,8 @@ struct GroupNameView: View {
                 .foregroundStyle(.white)
             Spacer(minLength: 4)
             Menu {
-                Button("Edit", systemImage: "square.and.pencil", action: edit)
-                Button("Delete", systemImage: "trash", action: delete)
+                Button("task.edit", systemImage: "square.and.pencil", action: edit)
+                Button("task.delete", systemImage: "trash", action: delete)
             } label: {
                 Rectangle()
                     .foregroundStyle(.clear)

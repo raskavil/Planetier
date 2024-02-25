@@ -29,7 +29,7 @@ extension TaskSortInput.Predicate {
     var taskSortDescriptor: SortDescriptor<ToDoTask> {
         return switch self {
             case .creation:     .init(\ToDoTask.creationDate)
-            case .deadline:     .init(\ToDoTask.deadline)
+            case .deadline:     .init(\ToDoTask.deadline, order: .reverse)
             case .estimation:   .init(\ToDoTask.estimation)
             case .name:         .init(\ToDoTask.name)
             case .priority:     .init(\ToDoTask.priorityRaw)

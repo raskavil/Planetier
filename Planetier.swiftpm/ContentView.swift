@@ -13,12 +13,12 @@ struct ContentView: View {
         TabView(selection: $selectedTab) {
             TasksTab()
                 .tabItem {
-                    Label("Tasks", systemImage: "list.bullet.clipboard")
+                    Label("tab.tasks", systemImage: "list.bullet.clipboard")
                 }
                 .tag(Tab.tasks)
             GroupsTab()
                 .tabItem {
-                    Label("Groups", systemImage: "rectangle.3.group.fill")
+                    Label("tab.groups", systemImage: "rectangle.3.group.fill")
                 }
                 .tag(Tab.groups)
             Text("Planning")

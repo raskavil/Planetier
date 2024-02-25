@@ -517,9 +517,19 @@ struct TaskEditView<Superview: View>: View {
             case (nil, _), (_, .none):
                 break
             case (.some(let representation), .new):
-                withAnimation { modelContext.insert(representation.representedType) }
+                withAnimation {
+                    let task = representation.representedType
+                    modelContext.insert(task)
+                    representation.group?.tasks.append(task)
+                }
             case (.some(let representation), .edit(let task)):
-                withAnimation { representation.setValues(on: task) }
+                withAnimation {
+                    if task.group != representation.group {
+                        _ = task.group?.tasks.firstIndex(of: task).map { task.group?.tasks.remove(at: $0) }
+                        representation.group?.tasks.append(task)
+                    }
+                    representation.setValues(on: task)
+                }
         }
         representedTask = nil
         input = nil
@@ -564,40 +574,5 @@ extension Int {
 
     var estimationText: String {
         .init(localized: "task.edit.estimation_\(self)hours")
-    }
-}
-
-#warning("This might not be necessary")
-extension Binding {
-    
-    func safelyUnwrappedBinding<Parent, Child>(
-        of keyPath: WritableKeyPath<Parent, Child>,
-        defaultValue: Child
-    ) -> Binding<Child> {
-        guard let optionalSelf = self as? Binding<Optional<Parent>> else {
-            fatalError("Wrong usage of \(#function), \(Parent.self) is not optional.")
-        }
-        
-        return .init {
-            optionalSelf.wrappedValue?[keyPath: keyPath] ?? defaultValue
-        } set: { newChildValue in
-            optionalSelf.wrappedValue?[keyPath: keyPath] = newChildValue
-        }
-
-    }
-    
-    func safelyUnwrappedBinding<Parent, Child>(
-        of keyPath: WritableKeyPath<Parent, Optional<Child>>,
-        defaultValue: Child
-    ) -> Binding<Child> {
-        guard let optionalSelf = self as? Binding<Optional<Parent>> else {
-            fatalError("Wrong usage of \(#function), \(Parent.self) is not optional.")
-        }
-        
-        return .init {
-            optionalSelf.wrappedValue?[keyPath: keyPath] ?? defaultValue
-        } set: { newChildValue in
-            optionalSelf.wrappedValue?[keyPath: keyPath] = newChildValue
-        }
     }
 }

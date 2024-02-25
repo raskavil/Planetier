@@ -7,8 +7,6 @@ struct GroupCell: View {
     let expand: (Group) -> Void
     let delete: (Group) -> Void
     let edit: (Group) -> Void
-    let editTask: (ToDoTask) -> Void
-    let deleteTask: (ToDoTask) -> Void
     let namespace: Namespace.ID
     
     var body: some View {
@@ -17,8 +15,19 @@ struct GroupCell: View {
                 .foregroundStyle(.clear)
                 .frame(height: 100)
             VStack(alignment: .leading, spacing: .medium) {
-                GroupNameView(group: group, edit: { edit(group) }, delete: { delete(group) }, namespace: namespace)
-                GroupPropertiesView(group: group, expand: { withAnimation { expand(group) } }, namespace: namespace)
+                GroupNameView(
+                    group: group,
+                    isExpanded: false,
+                    edit: { edit(group) },
+                    delete: { delete(group) },
+                    namespace: namespace
+                )
+                GroupPropertiesView(
+                    group: group,
+                    isExpanded: false,
+                    expand: { withAnimation { expand(group) } },
+                    namespace: namespace
+                )
             }
             .padding(.default)
             .frame(maxWidth: .infinity)
@@ -49,7 +58,7 @@ extension Group {
     }
     
     var percentageText: String {
-        "\(Int(portionDone*100))% done"
+        .init(localized: "group.\(Int(portionDone*100))percent_done")
     }
 }
 
@@ -78,8 +87,6 @@ struct GroupCellPreviews: PreviewProvider {
             expand: { _ in },
             delete: { _ in },
             edit: { _ in },
-            editTask: { _ in },
-            deleteTask: { _ in },
             namespace: Namespace().wrappedValue
         )
         .modelContainer(modelContainer)

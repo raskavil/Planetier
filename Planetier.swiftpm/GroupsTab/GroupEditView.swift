@@ -98,12 +98,12 @@ struct GroupEditView<Superview: View>: View {
         if let representedGroup {
             switch step {
                 case .name:
-                    Text(.init(localized: "task.edit.name_prompt"))
+                    Text(.init(localized: "group.edit.name_prompt"))
                         .font(.headline)
                         .bold()
                         .foregroundStyle(.black)
                     TextField(
-                        "task.edit.name_placeholder",
+                        "group.edit.name_placeholder",
                         text: .init(
                             get: { representedGroup.name },
                             set: { self.representedGroup?.name = $0 }
@@ -125,7 +125,7 @@ struct GroupEditView<Superview: View>: View {
                             .foregroundStyle(.clear)
                     }
                     if displayingNameError {
-                        Text(.init(localized: "task.edit.name_error"))
+                        Text(.init(localized: "group.edit.name_error"))
                             .font(.caption)
                             .bold()
                             .foregroundStyle(.tint)

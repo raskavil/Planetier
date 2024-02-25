@@ -1,26 +1,19 @@
 import SwiftUI
+import SwiftData
 
 struct GroupList: View {
     
     @Namespace var namespace
     @Environment(\.modelContext) var modelContext
+    @Query var groups: [Group]
     @State var editInput: GroupEditViewInput?
-    @State var editedTask: TaskEditViewInput?
     @State var expandedGroup: Group?
-    @State var isEditingSort = false
-    @State var presentedTaskToDelete: ToDoTask?
     @State var presentedGroupToDelete: Group?
-    @State var sorting: TaskSortInput = .userDefaultsValue ?? .init() {
-        didSet {
-            do { try sorting.saveToUserDefaults() }
-            catch { assertionFailure(error.localizedDescription) }
-        }
-    }
     
     var body: some View {
         ScrollView {
             VStack(spacing: .medium) {
-                QueryForEach { (group: Group) in
+                ForEach(groups) { (group: Group) in
                     GroupCell(
                         group: group,
                         expand: { group in
@@ -30,8 +23,6 @@ struct GroupList: View {
                         },
                         delete: { presentedGroupToDelete = $0 },
                         edit: { editInput = .edit($0) },
-                        editTask: { editedTask = .edit($0) },
-                        deleteTask: { presentedTaskToDelete = $0 },
                         namespace: namespace
                     )
                     .clipShape(RoundedRectangle(cornerRadius: .defaultRadius))
@@ -43,14 +34,9 @@ struct GroupList: View {
             }
             .padding(.horizontal, .default)
         }
-        .navigationTitle("Groups")
+        .navigationTitle(String(localized: "tab.groups"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(systemImage: "arrow.up.and.down.text.horizontal") {
-                    isEditingSort = true
-                }
-            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button(systemImage: "plus") {
                     editInput = .new
@@ -61,33 +47,9 @@ struct GroupList: View {
             $expandedGroup,
             delete: { group in withAnimation { presentedGroupToDelete = group } },
             edit: { group in withAnimation { editInput = .edit(group) } },
-            editTask: { task in withAnimation { editedTask = .edit(task) } },
-            deleteTask: { task in withAnimation { presentedTaskToDelete = task } },
             namespace: namespace
         )
         .groupEditView(input: $editInput)
-        .taskEditView(input: $editedTask)
-        .taskSortView(isPresented: $isEditingSort, input: sorting, save: { newValue in withAnimation { sorting = newValue } })
-        .dialog(
-            isPresented: .init(
-                get: { presentedTaskToDelete != nil },
-                set: { presentedTaskToDelete = $0 ? presentedTaskToDelete : nil }
-            ),
-            accessoryView: Image("delete", bundle: .main)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 150),
-            title: "Delete",
-            text: "Do you really want to permanently delete this task?",
-            buttonTitle: "Delete",
-            buttonStyle: .init(backgroundColor: .red),
-            confirmation: {
-                if let presentedTaskToDelete {
-                    self.presentedTaskToDelete = nil
-                    modelContext.delete(presentedTaskToDelete)
-                }
-            }
-        )
         .dialog(
             isPresented: .init(
                 get: { presentedGroupToDelete != nil },
@@ -97,13 +59,16 @@ struct GroupList: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 150),
-            title: "Delete",
-            text: "Do you really want to permanently delete this group?",
-            buttonTitle: "Delete",
+            title: .init(localized: "task.delete"),
+            text: .init(localized: "group.delete.confirmation"),
+            buttonTitle: .init(localized: "task.delete"),
             buttonStyle: .init(backgroundColor: .red),
             confirmation: {
                 if let presentedGroupToDelete {
                     self.presentedGroupToDelete = nil
+                    if expandedGroup == presentedGroupToDelete {
+                        expandedGroup = nil
+                    }
                     modelContext.delete(presentedGroupToDelete)
                 }
             }

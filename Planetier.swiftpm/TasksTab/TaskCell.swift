@@ -22,16 +22,16 @@ struct TaskCell: View {
                 Text(task.name).bold()
                 Spacer(minLength: 4)
                 Menu {
-                    Menu("State") {
-                        Button("Todo") { withAnimation { task.state = .todo } }
-                        Button("In progress") { withAnimation { task.state = .progress } }
-                        Button("Done") { withAnimation { task.state = .done } }
+                    Menu("task.state") {
+                        Button("task.state.todo") { withAnimation { task.state = .todo } }
+                        Button("task.state.inprogress") { withAnimation { task.state = .progress } }
+                        Button("task.state.done") { withAnimation { task.state = .done } }
                     }
                     if let edit {
-                        Button("Edit", systemImage: "square.and.pencil") { edit(task) }
+                        Button("task.edit", systemImage: "square.and.pencil") { edit(task) }
                     }
                     if let delete {
-                        Button("Delete", systemImage: "trash") { delete(task) }
+                        Button("task.delete", systemImage: "trash") { delete(task) }
                     }
                 } label: {
                     Rectangle()
@@ -164,7 +164,8 @@ extension ToDoTask.State {
         estimation: nil,
         deadline: nil,
         calendarEventID: nil,
-        group: group
+        group: group,
+        timeSpent: []
     )
     group.tasks.append(task)
     container.mainContext.insert(group)
