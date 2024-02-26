@@ -14,11 +14,11 @@ struct TaskFilterInput: Hashable, Identifiable, Codable {
     var deadline: Deadline?
     var hideDoneTasks = false
     
-    var filterPredicate: Predicate<ToDoTask> {
+    func filterPredicate(includeGroupsFilter: Bool = true) -> Predicate<ToDoTask> {
         
         typealias Condition = StandardPredicateExpression<Bool>
         
-        func buildConjunction(lhs: some Condition, rhs: some Condition) -> any Condition {
+        func conjunction(lhs: some Condition, rhs: some Condition) -> any Condition {
             PredicateExpressions.Conjunction(lhs: lhs, rhs: rhs)
         }
         
@@ -58,29 +58,31 @@ struct TaskFilterInput: Hashable, Identifiable, Codable {
                 )
             }
 
-            conditions.append(
-                PredicateExpressions.build_Negation(
-                    PredicateExpressions.build_NilCoalesce(
-                        lhs: PredicateExpressions.build_flatMap(
-                            PredicateExpressions.build_KeyPath(
-                                root: PredicateExpressions.build_Arg(task),
-                                keyPath: \.group
-                            )
-                        ) {
-                            PredicateExpressions.build_contains(
-                                PredicateExpressions.build_Arg(hiddenGroups),
+            if includeGroupsFilter {
+                conditions.append(
+                    PredicateExpressions.build_Negation(
+                        PredicateExpressions.build_NilCoalesce(
+                            lhs: PredicateExpressions.build_flatMap(
                                 PredicateExpressions.build_KeyPath(
-                                    root: PredicateExpressions.build_Arg($0),
-                                    keyPath: \.id
+                                    root: PredicateExpressions.build_Arg(task),
+                                    keyPath: \.group
                                 )
-                            )
-                        },
-                        rhs: PredicateExpressions.Value(false)
+                            ) {
+                                PredicateExpressions.build_contains(
+                                    PredicateExpressions.build_Arg(hiddenGroups),
+                                    PredicateExpressions.build_KeyPath(
+                                        root: PredicateExpressions.build_Arg($0),
+                                        keyPath: \.id
+                                    )
+                                )
+                            },
+                            rhs: PredicateExpressions.Value(false)
+                        )
                     )
                 )
-            )
+            }
             
-            let conjunction: (any Condition, any Condition) -> any Condition = { buildConjunction(lhs: $0, rhs: $1) }
+            let conjunction: (any Condition, any Condition) -> any Condition = { conjunction(lhs: $0, rhs: $1) }
             return conditions.first.map { conditions.dropFirst().reduce($0, conjunction)  } ?? PredicateExpressions.Value(true)
         })
     }

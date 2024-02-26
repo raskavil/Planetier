@@ -12,7 +12,7 @@ struct GroupList: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: .medium) {
+            VStack(spacing: .default) {
                 ForEach(groups) { (group: Group) in
                     GroupCell(
                         group: group,

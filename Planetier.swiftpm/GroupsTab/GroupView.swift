@@ -68,6 +68,25 @@ struct GroupView<Superview: View>: View {
     let namespace: Namespace.ID
     let superview: Superview
     
+    private var adjustedTasks: [ToDoTask] {
+        guard let selectedGroup else { return [] }
+        do {
+            return try selectedGroup.tasks
+                .filter(filter.filterPredicate(includeGroupsFilter: false))
+                .sorted { lhs, rhs in
+                    for descriptor in sorting.array.map(\.taskSortDescriptor) {
+                        let comparisson = descriptor.compare(lhs, rhs)
+                        if comparisson != .orderedSame {
+                            return comparisson == .orderedAscending
+                        }
+                    }
+                    return false
+                }
+        } catch {
+            return []
+        }
+    }
+    
     var body: some View {
         if let selectedGroup {
             content(selectedGroup)
@@ -93,7 +112,24 @@ struct GroupView<Superview: View>: View {
                     expand: { withAnimation { self.selectedGroup = nil } },
                     namespace: namespace
                 )
-                ForEach(selectedGroup.tasks) { task in //(selectedGroup.tasks.filter({ $0.state != .done})) { task in
+                HStack(spacing: .medium) {
+                    Button(action: { isEditingSort = true }) {
+                        Badge(
+                            text: .init(localized: "sorting"),
+                            image: .init(systemName: "arrow.up.and.down.text.horizontal"),
+                            style: .init(contentColor: .white, backgroundColor: .clear, borderColor: .white)
+                        )
+                    }
+                    Button(action: { isEditingFilter = true }) {
+                        Badge(
+                            text: .init(localized: "filter"),
+                            image: .init(systemName: "text.append"),
+                            style: .init(contentColor: .white, backgroundColor: .clear, borderColor: .white)
+                        )
+                    }
+                }
+                .transition(.opacity)
+                ForEach(adjustedTasks) { task in
                     TaskCell(
                         task: task,
                         edit: { task in withAnimation { editedTask = .edit(task) } },
@@ -114,13 +150,15 @@ struct GroupView<Superview: View>: View {
                 .padding(.top, 60)
         }
         .background(alignment: .top) {
-            Image("mars-background")
+            selectedGroup.appearance.image
                 .resizable()
                 .aspectRatio(0.46, contentMode: .fill)
                 .transition(.scale)
+                .padding(.top, -50)
                 .matchedGeometryEffect(id: GroupsNamespace.groupBackground + selectedGroup.id, in: namespace)
                 .ignoresSafeArea(.container, edges: .top)
         }
+        .background { selectedGroup.appearance.color }
         .toolbarBackground(.visible, for: .tabBar)
         .mask(
             RoundedRectangle(cornerRadius: .defaultRadius)
@@ -129,6 +167,12 @@ struct GroupView<Superview: View>: View {
         )
         .taskEditView(input: $editedTask)
         .taskSortView(isPresented: $isEditingSort, input: sorting, save: { newValue in withAnimation { sorting = newValue } })
+        .taskFilterView(
+            isPresented: $isEditingFilter,
+            input: filter,
+            includeGroupFilter: false,
+            save: { newValue in withAnimation { filter = newValue }}
+        )
         .dialog(
             isPresented: .init(
                 get: { presentedTaskToDelete != nil },

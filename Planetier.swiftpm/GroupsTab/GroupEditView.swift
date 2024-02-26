@@ -42,7 +42,7 @@ struct GroupEditView<Superview: View>: View {
     typealias Input = GroupEditViewInput
     
     enum Step: CaseIterable {
-        case name, overview
+        case name, planet, overview
     }
     
     @Namespace var namespace
@@ -82,6 +82,7 @@ struct GroupEditView<Superview: View>: View {
                     GradientScrollView(contentInsets: .init(vertical: .large)) {
                         VStack(alignment: .leading, spacing: .default) {
                             name
+                            planet
                         }
                     }
                     .scrollIndicators(.hidden)
@@ -142,6 +143,42 @@ struct GroupEditView<Superview: View>: View {
                             in: namespace,
                             anchor: .topLeading
                         )
+            }
+        }
+    }
+    
+    // MARK: - Planet segment
+    @ViewBuilder private var planet: some View {
+        if let representedGroup {
+            if step == .planet {
+                Collection(horizontalSpacing: .medium, verticalSpacing: .medium) {
+                    ForEach(Appearance.allCases, id: \.rawValue) { planet in
+                        Badge(
+                            text: planet.name,
+                            style: .init(
+                                contentColor: representedGroup.planet == planet.rawValue ? .white : .black,
+                                backgroundColor: representedGroup.planet == planet.rawValue ? planet.color : .clear,
+                                borderColor: representedGroup.planet == planet.rawValue ? planet.color : .black
+                            )
+                        )
+                        .bold()
+                        .onTapGesture {
+                            withAnimation {
+                                self.representedGroup?.planet = planet.rawValue
+                            }
+                        }
+                    }
+                }
+            } else if step == .overview, let planet = Appearance(rawValue: representedGroup.planet) {
+                Badge(
+                    text: planet.name,
+                    style: .init(
+                        contentColor: .white,
+                        backgroundColor: planet.color,
+                        borderColor: planet.color
+                    )
+                )
+                .bold()
             }
         }
     }

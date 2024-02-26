@@ -50,7 +50,7 @@ struct TaskSortView<Content: View>: View {
                         Spacer()
                     }
                     
-                    Text("Sorting priority")
+                    Text("sorting.title")
                         .font(.title)
                         .bold()
                         .padding(.top, .large)
@@ -73,7 +73,7 @@ struct TaskSortView<Content: View>: View {
                     
                     Spacer(minLength: 0)
                     
-                    LargeButton(title: "Save") {
+                    LargeButton(title: .init(localized: "save")) {
                         save(input)
                         isPresented = false
                     }
@@ -101,11 +101,11 @@ extension TaskSortInput.Predicate {
     
     var uiText: String {
         return switch self {
-            case .creation:     "Creation"
-            case .deadline:     "Deadline"
-            case .estimation:   "Estimation"
-            case .priority:     "Priority"
-            case .name:         "Name"
+            case .creation:     .init(localized: "sorting.creation")
+            case .deadline:     .init(localized: "task.edit.deadline")
+            case .estimation:   .init(localized: "task.edit.estimation")
+            case .priority:     .init(localized: "task.priority")
+            case .name:         .init(localized: "sorting.name")
         }
     }
 }

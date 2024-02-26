@@ -37,10 +37,11 @@ struct GroupCell: View {
             }
         }
         .background(alignment: .top) {
-            Image("mars-background")
+            group.appearance.image
                 .resizable()
                 .aspectRatio(0.46, contentMode: .fill)
                 .transition(.scale)
+                .padding(.top, -.default)
                 .matchedGeometryEffect(id: GroupsNamespace.groupBackground + group.id, in: namespace)
         }
         .mask(
@@ -68,7 +69,7 @@ struct GroupCellPreviews: PreviewProvider {
         id: UUID().uuidString,
         creationDate: .now,
         name: "House chores",
-        planetName: "YPL-125-Z",
+        planet: "luna",
         tasks: []
     )
     

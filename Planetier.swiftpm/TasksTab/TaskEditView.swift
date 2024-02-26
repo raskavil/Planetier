@@ -179,29 +179,31 @@ struct TaskEditView<Superview: View>: View {
         }
     }
     
-    var groupBinding: Binding<String> {
+    // MARK: - Group segment
+    
+    private var groupBinding: Binding<String> {
         .init(
             get: { representedTask?.group?.id ?? groups.first?.id ?? "" },
             set: { selectedId in representedTask?.group = groups.first(where: { $0.id == selectedId }) }
         )
     }
     
-    // MARK: - Group segment
     @ViewBuilder private var group: some View {
         switch step {
             case .name:
                 EmptyView()
             case .group:
                 HStack(spacing: .medium) {
-                    Text("Group")
+                    Text("task.edit.group")
                         .bold()
                     Spacer()
                     Picker(
-                        "Group",
+                        "task.edit.group",
                         selection: groupBinding,
                         content: {
                             ForEach(groups, id: \.id) { group in
                                 Text(group.name)
+                                    .foregroundStyle(group.appearance.color)
                             }
                         }
                     )
@@ -213,10 +215,11 @@ struct TaskEditView<Superview: View>: View {
                 .transition(.opacity)
             default:
                 HStack {
-                    Text("Group")
+                    Text("task.edit.group")
                         .bold()
                     Spacer()
                     Text(representedTask?.group?.name ?? "")
+                        .foregroundStyle(representedTask?.group?.appearance.color ?? .accentColor)
                         .matchedGeometryEffect(id: "TaskEditGroupView", in: namespace)
                 }
         }
@@ -238,7 +241,10 @@ struct TaskEditView<Superview: View>: View {
                                     Badge(
                                         text: priority.uiText,
                                         image: priority.uiImage,
-                                        style: priority.badgeStyle(for: representedTask.priority)
+                                        style: priority.badgeStyle(
+                                            for: representedTask.priority,
+                                            color: representedTask.group?.appearance.color ?? .accentColor
+                                        )
                                     )
                                     .matchedGeometryEffect(id: "priority_\(priority.rawValue)", in: namespace)
                                 }
@@ -248,7 +254,10 @@ struct TaskEditView<Superview: View>: View {
                             Badge(
                                 text: representedTask.priority.uiText,
                                 image: representedTask.priority.uiImage,
-                                style: representedTask.priority.badgeStyle(for: representedTask.priority)
+                                style: representedTask.priority.badgeStyle(
+                                    for: representedTask.priority,
+                                    color: representedTask.group?.appearance.color ?? .accentColor
+                                )
                             )
                             .matchedGeometryEffect(id: "priority_\(representedTask.priority.rawValue)", in: namespace)
                         }
@@ -270,6 +279,7 @@ struct TaskEditView<Superview: View>: View {
                             get: { representedTask.deadline != nil },
                             set: { self.representedTask?.deadline = $0 ? .now : nil }
                         ),
+                        color: representedTask.group?.appearance.color ?? .accentColor,
                         label: {
                             Text(.init(localized: "task.edit.deadline_prompt"))
                                 .font(.headline)
@@ -317,7 +327,7 @@ struct TaskEditView<Superview: View>: View {
     @ViewBuilder private var estimation: some View {
         if let representedTask {
             switch step {
-                case .name, .priority, .deadline:
+            case .name, .group, .priority, .deadline:
                     EmptyView()
                 case .estimation:
                     Checkbox(
@@ -325,6 +335,7 @@ struct TaskEditView<Superview: View>: View {
                             get: { representedTask.estimation != nil },
                             set: { self.representedTask?.estimation = $0 ? 0 : nil }
                         ),
+                        color: representedTask.group?.appearance.color ?? .accentColor,
                         label: {
                             Text(.init(localized: "task.edit.add_estimation"))
                                 .font(.headline)
@@ -388,7 +399,8 @@ struct TaskEditView<Superview: View>: View {
                                     self.representedTask?.subtasks.firstIndex(of: subtask)
                                         .map { self.representedTask?.subtasks[$0].done = newValue }
                                 }
-                            )
+                            ),
+                            color: representedTask.group?.appearance.color ?? .accentColor
                         )
                         .padding(.horizontal, .medium)
                         if step == .subtasks {
@@ -560,11 +572,11 @@ extension ToDoTask.Priority {
         }
     }
     
-    func badgeStyle(for selection: Self) -> Badge.Style {
+    func badgeStyle(for selection: Self, color: Color) -> Badge.Style {
         .init(
-            contentColor: self == selection ? .white : .accentColor,
-            backgroundColor: self == selection ? .accentColor : .white,
-            borderColor: self == selection ? .clear : .accentColor
+            contentColor: self == selection ? .white : color,
+            backgroundColor: self == selection ? color : .white,
+            borderColor: color
         )
     }
     

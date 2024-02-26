@@ -3,7 +3,7 @@ import SwiftUI
 struct ContentView: View {
     
     enum Tab: Hashable {
-        case tasks, groups, planning, preferences
+        case tasks, groups, planning
     }
     
     @Environment(\.navigation) var navigation
@@ -21,16 +21,6 @@ struct ContentView: View {
                     Label("tab.groups", systemImage: "rectangle.3.group.fill")
                 }
                 .tag(Tab.groups)
-            Text("Planning")
-                .tabItem {
-                    Label("Planning", systemImage: "calendar")
-                }
-                .tag(Tab.planning)
-            Text("Preferences")
-                .tabItem {
-                    Label("Preferences", systemImage: "gear")
-                }
-                .tag(Tab.preferences)
         }
         .onAppear {
             navigation.add(action: { destination in

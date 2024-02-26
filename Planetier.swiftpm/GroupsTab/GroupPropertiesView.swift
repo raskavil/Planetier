@@ -12,22 +12,22 @@ struct GroupPropertiesView: View {
             Button(systemImage: "chevron.down", action: expand)
                 .rotationEffect(isExpanded ? .zero : .radians(.pi))
                 .foregroundStyle(.white)
+                .frame(width: .large, height: .large)
                 .matchedGeometryEffect(id: GroupsNamespace.groupChevron + group.id, in: namespace)
-            HStack(spacing: .medium) {
-                Text(group.planetName)
-                    .font(.body)
-                    .foregroundStyle(.white)
-                Circle()
-                    .trim(from: 1 - group.portionDone, to: 1)
-                    .stroke(.white, lineWidth: .small)
-                    .frame(width: .large, height: .large)
-                    .rotationEffect(.init(radians: -.pi / 2))
-                    .rotation3DEffect(.radians(.pi), axis: (0,1,0))
-                    .padding(.trailing, 2)
-                Text(group.percentageText)
-                    .foregroundStyle(.white)
+            if group.portionDone > 0 {
+                HStack(spacing: .medium) {
+                    Circle()
+                        .trim(from: 1 - group.portionDone, to: 1)
+                        .stroke(.white, lineWidth: .small)
+                        .frame(width: .large, height: .large)
+                        .rotationEffect(.init(radians: -.pi / 2))
+                        .rotation3DEffect(.radians(.pi), axis: (0,1,0))
+                        .padding(.trailing, 2)
+                    Text(group.percentageText)
+                        .foregroundStyle(.white)
+                }
+                .matchedGeometryEffect(id: GroupsNamespace.groupDescription + group.id, in: namespace)
             }
-            .matchedGeometryEffect(id: GroupsNamespace.groupDescription + group.id, in: namespace)
         }
     }
 }

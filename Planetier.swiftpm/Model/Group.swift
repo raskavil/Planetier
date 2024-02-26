@@ -7,20 +7,21 @@ class Group {
     @Attribute(.unique) let id: String
     let creationDate: Date
     var name: String
-    var planetName: String
+    var planet: String
     @Relationship(deleteRule: .cascade, inverse: \ToDoTask.group) var tasks: [ToDoTask]
+    @Transient var appearance: Appearance { .init(rawValue: planet) ?? .mars }
     
     init(
         id: String,
         creationDate: Date,
         name: String,
-        planetName: String,
+        planet: String,
         tasks: [ToDoTask]
     ) {
         self.id = id
         self.creationDate = creationDate
         self.name = name
-        self.planetName = planetName
+        self.planet = planet
         self.tasks = tasks
     }
 }
@@ -30,7 +31,7 @@ struct GroupRepresentation: ModelRepresentation {
     let id: String?
     let creationDate: Date?
     var name: String
-    var planetName: String
+    var planet: String
     var tasks: [ToDoTask]
     
     var representedType: Group {
@@ -38,14 +39,14 @@ struct GroupRepresentation: ModelRepresentation {
             id: id ?? UUID().uuidString,
             creationDate: creationDate ?? .now,
             name: name,
-            planetName: planetName,
+            planet: planet,
             tasks: tasks
         )
     }
     
     func setValues(on group: Group) {
         group.name = name
-        group.planetName = planetName
+        group.planet = planet
         group.tasks = tasks
     }
     
@@ -53,19 +54,19 @@ struct GroupRepresentation: ModelRepresentation {
         id = representedType.id
         creationDate = representedType.creationDate
         name = representedType.name
-        planetName = representedType.planetName
+        planet = representedType.planet
         tasks = representedType.tasks
     }
     
     init(
         name: String = "",
-        planetName: String = "",
+        planet: String = "mars",
         tasks: [ToDoTask] = []
     ) {
         id = nil
         creationDate = nil
         self.name = name
-        self.planetName = planetName
+        self.planet = planet
         self.tasks = tasks
     }
 }

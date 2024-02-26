@@ -13,6 +13,4 @@ struct PlaningInput {
     var strategy: Strategy = .priority
     var selectedGroups: [Group]
     var hoursPerDay: Double = 0
-    
-    // func calculateTasks() -> []
 }

@@ -3,6 +3,7 @@ import SwiftUI
 struct Checkbox<Content: View>: View {
     
     @Binding var isSelected: Bool
+    let color: Color
     let label: Content
     
     var body: some View {
@@ -16,7 +17,7 @@ struct Checkbox<Content: View>: View {
                     .background {
                         if isSelected {
                             RoundedRectangle(cornerRadius: .small)
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(color)
                                 .transition(.opacity)
                                 .overlay {
                                     Image(systemName: "xmark")
@@ -37,12 +38,13 @@ struct Checkbox<Content: View>: View {
         }
     }
     
-    init(isSelected: Binding<Bool>, label: Content = EmptyView()) {
+    init(isSelected: Binding<Bool>, color: Color = .accentColor, label: Content = EmptyView()) {
         self._isSelected = isSelected
+        self.color = color
         self.label = label
     }
     
-    init(isSelected: Binding<Bool>, @ViewBuilder label: () -> Content) {
-        self.init(isSelected: isSelected, label: label())
+    init(isSelected: Binding<Bool>, color: Color = .accentColor, @ViewBuilder label: () -> Content) {
+        self.init(isSelected: isSelected, color: color, label: label())
     }
 }

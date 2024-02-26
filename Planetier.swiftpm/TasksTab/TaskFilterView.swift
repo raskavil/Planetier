@@ -6,12 +6,14 @@ struct TaskFilterable: ViewModifier {
     
     let isPresented: Binding<Bool>
     let input: TaskFilterInput
+    let includeGroupFilter: Bool
     let save: (TaskFilterInput) -> Void
     
     @ViewBuilder func body(content: Content) -> some View {
         TaskFilterView(
             isPresented: isPresented,
             input: input,
+            includeGroupFilter: includeGroupFilter,
             save: save,
             superview: { content }
         )
@@ -23,9 +25,10 @@ extension View {
     func taskFilterView(
         isPresented: Binding<Bool>,
         input: TaskFilterInput,
+        includeGroupFilter: Bool = true,
         save: @escaping (TaskFilterInput) -> Void
     ) -> some View {
-        modifier(TaskFilterable(isPresented: isPresented, input: input, save: save))
+        modifier(TaskFilterable(isPresented: isPresented, input: input, includeGroupFilter: includeGroupFilter, save: save))
     }
 }
 
@@ -35,6 +38,7 @@ struct TaskFilterView<Content: View>: View {
     @Binding private var isPresented: Bool
     @Query private var groups: [Group]
     @State private var input: TaskFilterInput
+    let includeGroupFilter: Bool
     private let save: (TaskFilterInput) -> Void
     private let superview: Content
     
@@ -54,20 +58,20 @@ struct TaskFilterView<Content: View>: View {
                     GradientScrollView(contentInsets: .init(vertical: .default)) {
                         VStack(alignment: .leading, spacing: .default) {
                             
-                            Text("Filter")
+                            Text("filter")
                                 .font(.title)
                                 .bold()
                                 .padding(.top, .medium)
                             
                             Checkbox(isSelected: $input.hideDoneTasks) {
-                                Text("Hide done tasks?")
+                                Text("filter.hide_done")
                                     .foregroundStyle(.black)
                                     .bold()
                                 Spacer()
                             }
                             
                             HStack(spacing: .zero) {
-                                Text("Deadline")
+                                Text("task.edit.deadline")
                                     .bold()
                                 Spacer(minLength: .medium)
                                 Picker(
@@ -80,24 +84,26 @@ struct TaskFilterView<Content: View>: View {
                                 .tint(.black)
                             }
 
-                            Collection(verticalSpacing: .medium) {
-                                ForEach(groups) { group in
-                                    Badge(
-                                        text: group.name,
-                                        image: nil,
-                                        style: input.hiddenGroups.contains(group.id) ? .init() : .selected
-                                    )
-                                    .onTapGesture {
-                                        withAnimation {
-                                            if input.hiddenGroups.contains(group.id) {
-                                                input.hiddenGroups.remove(group.id)
-                                            } else {
-                                                input.hiddenGroups.insert(group.id)
+                            if includeGroupFilter {
+                                Collection(verticalSpacing: .medium) {
+                                    ForEach(groups) { group in
+                                        Badge(
+                                            text: group.name,
+                                            image: nil,
+                                            style: input.hiddenGroups.contains(group.id) ? .init() : .selected
+                                        )
+                                        .onTapGesture {
+                                            withAnimation {
+                                                if input.hiddenGroups.contains(group.id) {
+                                                    input.hiddenGroups.remove(group.id)
+                                                } else {
+                                                    input.hiddenGroups.insert(group.id)
+                                                }
                                             }
                                         }
+                                        .bold()
+                                        .fixedSize()
                                     }
-                                    .bold()
-                                    .fixedSize()
                                 }
                             }
                         }
@@ -107,7 +113,7 @@ struct TaskFilterView<Content: View>: View {
     
                     Spacer()
                     
-                    LargeButton(title: "Save") {
+                    LargeButton(title: .init(localized: "save")) {
                         save(input)
                         isPresented = false
                     }
@@ -121,11 +127,13 @@ struct TaskFilterView<Content: View>: View {
     init(
         isPresented: Binding<Bool>,
         input: TaskFilterInput,
+        includeGroupFilter: Bool,
         save: @escaping (TaskFilterInput) -> Void,
         @ViewBuilder superview: () -> Content
     ) {
         self._isPresented = isPresented
         self._input = .init(initialValue: input)
+        self.includeGroupFilter = includeGroupFilter
         self.save = save
         self.superview = superview()
     }
@@ -140,10 +148,10 @@ extension Optional<TaskFilterInput.Deadline> {
     
     var uiText: String {
         return switch self {
-            case .pastDeadline: "Past the deadline"
-            case .inWeek:       "In 7 days"
-            case .inMonth:      "In 30 days"
-            case .none:         "Any"
+            case .pastDeadline: .init(localized: "filter.past_deadline")
+            case .inWeek:       .init(localized: "filter.in_week")
+            case .inMonth:      .init(localized: "filter.in_month")
+            case .none:         .init(localized: "filter.deadline_any")
         }
     }
     

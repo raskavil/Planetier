@@ -42,7 +42,7 @@ struct TaskCell: View {
                 }
                 .frame(width: .large, height: .large)
             }
-            HStack(spacing: .small) {
+            Collection(horizontalSpacing: .small, verticalSpacing: .small) {
                 if task.subtasks.isEmpty == false {
                     Button {
                         withAnimation(.easeInOut(duration: 0.3)) {
@@ -51,7 +51,7 @@ struct TaskCell: View {
                     } label: {
                         Circle()
                             .trim(from: 1 - Double(task.subtasks.filter(\.done).count) / Double(task.subtasks.count), to: 1)
-                            .stroke(.tint, lineWidth: .small)
+                            .stroke(task.group?.appearance.color ?? .accentColor, lineWidth: .small)
                             .frame(width: .large, height: .large)
                             .rotationEffect(.init(radians: -.pi / 2))
                             .rotation3DEffect(.radians(.pi), axis: (0,1,0))
@@ -60,6 +60,7 @@ struct TaskCell: View {
                                     .imageScale(.small)
                                     .bold()
                                     .rotationEffect(isShowingSubtasks ? .radians(.pi) : .zero)
+                                    .foregroundStyle(task.group?.appearance.color ?? .accentColor)
                             }
                             .padding(.trailing, 2)
                     }
@@ -67,7 +68,7 @@ struct TaskCell: View {
                 task.priority.uiImage
                     .resizable()
                     .frame(width: .large, height: .large)
-                    .foregroundStyle(.tint)
+                    .foregroundStyle(task.group?.appearance.color ?? .accentColor)
                 Badge(
                     text: task.state.uiText,
                     style: .init(contentColor: .init(uiColor: .tintColor), borderColor: .init(uiColor: .tintColor))
@@ -82,12 +83,11 @@ struct TaskCell: View {
                         image: .init(systemName: "calendar.badge.clock"),
                         style: .init(
                             contentColor: .white,
-                            backgroundColor: .init(uiColor: .tintColor),
-                            borderColor: .clear
+                            backgroundColor: task.group?.appearance.color ?? .accentColor,
+                            borderColor: task.group?.appearance.color ?? .accentColor
                         )
                     )
                 }
-                Spacer()
             }
             if isShowingSubtasks && task.subtasks.isEmpty == false {
                 VStack(alignment: .leading, spacing: -1) {
@@ -101,7 +101,8 @@ struct TaskCell: View {
                                         task.subtasks.firstIndex(of: subtask)
                                             .map { task.subtasks[$0].done = newValue }
                                     }
-                                )
+                                ),
+                                color: task.group?.appearance.color ?? .accentColor
                             )
                             .padding(.horizontal, .medium)
                             Text(subtask.name)
@@ -151,7 +152,7 @@ extension ToDoTask.State {
         id: "previewGroup",
         creationDate: .now,
         name: "Preview group",
-        planetName: "XW21",
+        planet: "luna",
         tasks: []
     )
     let task = ToDoTask(
